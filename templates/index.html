@@ -3,128 +3,77 @@
 
 {% block content%}
 
-    <section class="hero is-primary" style="height: 150px;">
-        <div class="hero-body">
-            <div class="container">
-                <h1 class="title">
-                    BILLPAY
-                </h1>
-                <h2 class="subtitle">
-                    You can pay all of your bills with just a few clicks!
-                </h2>
-            </div>
+<section class="hero is-primary" style="height: 150px;">
+    <div class="hero-body">
+        <div class="container">
+            <h1 class="title">
+                BILLPAY
+            </h1>
+            <h2 class="subtitle">
+                You can pay all of your bills with just a few clicks!
+            </h2>
         </div>
-    </section>
+    </div>
+</section>
 
-    <div class="columns is-multiline is-mobile">
+<div class="columns is-multiline is-mobile">
+    <div class="column is-half">
+        <section style="padding: 30px;">
+            <div class="card" style="font-weight: bold;">
+                <header class="card-header ">
+                    <h1 class="card-header-title">
+                        Consumer
+                    </h1>
+                </header>
 
-        <div class="column is-half">
-            <section style="padding: 30px;">
-                <div class="card" style="font-weight: bold;">
-                    <header class="card-header " >
-                        <h1 class="card-header-title" >
-                            Consumer
-                        </h1>
-                    </header>
-
-                    <div class="card-content">
-                        <div class="content">
-                            <h1>1,253,895</h1>
-                        </div>
-                    </div>
-
-                </div>
-
-                <div class="card " style="padding-top: 15px;">
-                    <header class="card-header">
-                        <p class="card-header-title">
-                            City
-                        </p>
-
-                    </header>
-                    <div class="card-content">
-                        <div class="content">
-                            <h1>73</h1>
-                        </div>
-                    </div>
-
-                </div>
-
-                <div class="card " style="padding-top: 15px;">
-                    <header class="card-header">
-                        <p class="card-header-title">
-                            Company
-                        </p>
-                    </header>
-                    <div class="card-content">
-                        <div class="content">
-                            <h1>253</h1>
-                        </div>
-                    </div>
-
-                </div>
-            </section>
-        </div>
-
-        <div class="column is-half" style="margin-top: 30px;">
-            <div class="card" >
                 <div class="card-content">
-                    <div class="hero-body">
-                        <div class="columns is-centered">
-                            <div class="column ">
-                                <div class="notification is-light">
-                                    <div class="control has-icons-left has-icons-right">
-                                        <div class="field">
-                                            <label class="label">Username</label>
-                                            <div class="control has-icons-left has-icons-right">
-                                                <input class="input is-success" type="text" placeholder="Text input" value="bulma">
-                                                <span class="icon is-small is-left">
-                                                  <i class="fas fa-user"></i>
-                                                </span>
-                                                <span class="icon is-small is-right">
-                                                  <i class="fas fa-check"></i>
-                                                </span>
-                                            </div>
-                                            <p class="help is-success">This username is available</p>
-                                        </div>
-                                    </div>
+                    <div class="content">
+                        <h1>1,253,895</h1>
+                    </div>
+                </div>
 
-                                    <div class="field">
-                                        <label class="label">Email</label>
-                                        <div class="control has-icons-left has-icons-right">
-                                            <input class="input is-danger" type="email" placeholder="Email input" value="hello@">
-                                            <span class="icon is-small is-left">
-                                              <i class="fas fa-envelope"></i>
-                                            </span>
-                                            <span class="icon is-small is-right">
-                                              <i class="fas fa-exclamation-triangle"></i>
-                                            </span>
-                                        </div>
-                                        <p class="help is-danger">This email is invalid</p>
-                                    </div>
+            </div>
 
-                                    <div class="field">
-                                        <label class="label">Password:</label>
-                                        <p class="control has-icons-left">
-                                            <input class="input" type="password" placeholder="Password">
-                                            <span class="icon is-small is-left">
-                                                <i class="fas fa-lock"></i>
-                                            </span>
-                                        </p>
-                                    </div>
+            <div class="card " style="padding-top: 15px;">
+                <header class="card-header">
+                    <p class="card-header-title">
+                        City
+                    </p>
 
-                                    <div class="field">
-                                        <div class="control">
-                                            <label class="checkbox">
-                                                <input type="checkbox">
-                                                I agree to the <a href="#">terms and conditions</a>
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="field is-grouped is-grouped-right">
-                                        <button class="button is-link is-rounded" style="alignment: right;">Sign Up</button>
-                                    </div>
+                </header>
+                <div class="card-content">
+                    <div class="content">
+                        <h1>73</h1>
+                    </div>
+                </div>
 
+            </div>
+
+            <div class="card " style="padding-top: 15px;">
+                <header class="card-header">
+                    <p class="card-header-title">
+                        Company
+                    </p>
+                </header>
+                <div class="card-content">
+                    <div class="content">
+                        <h1>253</h1>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </div>
+
+    <div class="column is-half" style="margin-top: 30px;">
+        <div class="card">
+            <div class="card-content">
+                <div class="hero-body">
+                    <div class="columns is-centered">
+                        <div class="column ">
+                            <div class="notification is-light">
+                                <div class="control has-icons-left has-icons-right">
+                                    
                                 </div>
                             </div>
                         </div>
@@ -133,5 +82,4 @@
             </div>
         </div>
     </div>
-
-{% endblock %}
+    {% endblock %}
