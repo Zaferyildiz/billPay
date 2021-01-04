@@ -1,0 +1,47 @@
+{% extends "layout.html" %}
+{% block title %}My Bills{% endblock %}
+
+{% block content%}
+
+    <section class="hero is-light" style="height: 150px;">
+        <div class="hero-body">
+            <div class="container">
+                <h1 class="title">
+                    Hi Zafer!
+                </h1>
+                <h2 class="subtitle">
+                    You can display all of your bills here!
+                </h2>
+            </div>
+        </div>
+    </section>
+
+    <div style="padding: 50px; align-self: center;">
+        <p style="font-size: xx-large;"> My Bills </p>
+    </div>
+
+<div class="columns is-centered" style="flex: 1; ">
+    <table class="table table is-bordered is-striped is-narrow is-hoverable is-fullwidth" style="width: 80%;">
+        <tr style="font-weight: bold; text-align: center;">
+            <th>Num</th>
+            <th>Company</th>
+            <th>Service Type</th>
+            <th>Charge</th>
+            <th>Pay</th>
+            <th>Share</th>
+        </tr>
+
+        {% for billNum in range(1,7)  %}
+            <tr style="text-align: center;">
+                <td>{{ billNum }}</td>
+                <td>Company X</td>
+                <td>Electricity</td>
+                <td>95.36 </td>
+                <td> <button class="button is-primary is-small is-rounded"> Pay</button></td>
+                <td> <button class="button is-danger is-small is-rounded"> Share!</button></td>
+            </tr>
+        {% endfor %}
+    </table>
+</div>
+
+{% endblock %}
