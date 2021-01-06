@@ -1,64 +1,78 @@
-from flask import Flask, render_template, request, redirect
+from wtforms import Form, StringField, TextAreaField, SelectField, PasswordField, validators
+from flask import Flask, render_template, request, redirect, session, url_for
 from datetime import datetime
-#from passlib.hash import pbkdf2_sha256 as hasher
+from passlib.hash import pbkdf2_sha256 as hasher
 import psycopg2 as dbapi2
 import os
 import sys
+from dboperations import *
+from forms import *
 
 app = Flask(__name__)
-url = os.getenv("DATABASE_URL")
+app.secret_key = "super secret key"
 
 @app.route("/", methods = ["GET", "POST"])
-def homePage(): 
+def index(): 
     return render_template("index.html")
-    
+
+@app.route("/login", methods = ["GET", "POST"])
+def login(): 
+    form = Login(request.form)
+    if request.method == "POST":
+        username = form.username.data
+        passwordInput = form.password.data
+        res = isLogin(username, passwordInput)
+        if res == "nouser":
+            flash("There is no user with this username", "danger")
+            error = "There is no user with this username"
+            return redirect(url_for("login"))
+        elif res == "wrongpassword":
+            flash("Your password is wrong! Please try again!", "danger")
+            return redirect(url_for("login"))
+        else:
+            return redirect(url_for("index"))
+    else: 
+        return render_template("login.html", form=form)
+
 
 @app.route("/company/register", methods = ["GET", "POST"])
 def companyRegister():
-    if request.method == "GET": 
-        with dbapi2.connect(url) as connection:
-            cur = connection.cursor()
-            cur.execute("SELECT * FROM public.servicetype")
-            servicetype = cur.fetchall()
-            cur.execute("SELECT * FROM public.city")
-            city = cur.fetchall()
-            return render_template("companyRegister.html", servicetype=servicetype, city=city)
+    form = CompanyRegister(request.form)
+    if request.method == "POST" and form.validate(): 
+        username = form.username.data
+        name = form.name.data
+        email = form.email.data
+        password = form.password.data
+        serviceTypeId = form.servicetype.data
+        cityId = form.city.data
+        saveCompany(username, name, email, password, serviceTypeId, cityId)  
+        flash("You have succesfully registered!", "success")
+        return redirect("/company/register")
     else:
-        with dbapi2.connect(url) as connection:
-            name = request.form["name"]
-            email = request.form["email"]
-            password = request.form["password"]
-            serviceTypeId = request.form["servicetype"]
-            cityId = request.form["city"]
-            cursor = connection.cursor()
-            query = """INSERT INTO COMPANY (NAME, EMAIL, PASSWORD, SERVICETYPEID, CITYID) VALUES(%s,%s,%s,%s,%s); """
-            cursor.execute(query, (name,email,password, serviceTypeId, cityId) )
-            connection.commit()
-            cursor.close()
-        return redirect("/")
+        city = getAllCities()
+        servicetype = getAllServiceTypes()
+        form.servicetype.choices = [(s['id'], s['name']) for s in servicetype]
+        form.city.choices = [(c['id'], c['name']) for c in city]    
+        return render_template("companyRegister.html", form=form)
+        
 
 @app.route("/consumer/register", methods = ["GET", "POST"])
 def consumerRegister():
-    if request.method == "GET": 
-        with dbapi2.connect(url) as connection:
-            cur = connection.cursor()
-            cur.execute("SELECT * FROM public.city")
-            city = cur.fetchall()
-        return render_template("consumerRegister.html", city=city)
-    else:
-        with dbapi2.connect(url) as connection:
-            name = request.form["name"]
-            surname = request.form["surname"]
-            email = request.form["email"]
-            password = request.form["password"]
-            cityId = request.form["city"]
-            cursor = connection.cursor()
-            query = """INSERT INTO CONSUMER (NAME, SURNAME, EMAIL, PASSWORD, CITYID) VALUES(%s,%s,%s,%s,%s); """
-            cursor.execute(query, (name, surname, email, password, cityId) )
-            connection.commit()
-            cursor.close()
+    form = ConsumerRegister(request.form)
+    if request.method == "POST":
+        username = form.username.data
+        name = form.name.data
+        surname = form.surname.data
+        email = form.email.data
+        password = form.password.data
+        cityId = form.city.data
+        saveConsumer(username, name, surname, email, password, cityId)    
         return redirect("/")
-
+        
+    else:
+        city = getAllCities()
+        form.city.choices = [(c['id'], c['name']) for c in city]    
+        return render_template("consumerRegister.html", form=form)
 
 @app.route("/myBills")
 def myBillPage():

@@ -3,90 +3,18 @@
 
 {% block content%}
 
-<div class="column is-half" style="margin-top: 30px;">
-    <div class="card">
-        <div class="card-content">
-            <form action="" method="post" >                                
-                <div class="field">
-                    <label class="label">Name</label>
-                    <div class="control has-icons-left has-icons-right">
-                        <input class="input is-success" name="name" type="text" placeholder="Text input">
-                            
-                        <span class="icon is-small is-left">
-                            <i class="fas fa-user"></i>
-                        </span>
-                        <span class="icon is-small is-right">
-                            <i class="fas fa-check"></i>
-                        </span>
-                    </div>
-                    <p class="help is-success">This username is available</p>
-                </div>
-            
-                <div class="field">
-                    <label class="label">Surname</label>
-                    <div class="control has-icons-left has-icons-right">
-                        <input class="input is-success" name="surname" type="text" placeholder="Text input">
-                            
-                        <span class="icon is-small is-left">
-                            <i class="fas fa-user"></i>
-                        </span>
-                        <span class="icon is-small is-right">
-                            <i class="fas fa-check"></i>
-                        </span>
-                    </div>
-                    <p class="help is-success">This username is available</p>
-                </div>
-
-                <div class="field">
-                    <label class="label">Email</label>
-                    <div class="control has-icons-left has-icons-right">
-                        <input class="input is-danger" name="email" type="email" placeholder="Email input">
-                        <span class="icon is-small is-left">
-                            <i class="fas fa-envelope"></i>
-                        </span>
-                        <span class="icon is-small is-right">
-                            <i class="fas fa-exclamation-triangle"></i>
-                        </span>
-                    </div>
-                    <p class="help is-danger">This email is invalid</p>
-                </div>
-            
-                <div class="field">
-                    <label class="label">Password:</label>
-                    <p class="control has-icons-left">
-                        <input class="input" type="password" name="password" placeholder="Password">
-                        <span class="icon is-small is-left">
-                            <i class="fas fa-lock"></i>
-                        </span>
-                    </p>
-                </div>
-                
-                <div class="field">
-                    <label class="label">City</label>
-                    <select name="city">
-                        {% for ct in city%}
-                            <option value="{{ct[0]}}">{{ct[1]}}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="field">
-                    <div class="control">
-                        <label class="checkbox">
-                            <input type="checkbox">
-                            I agree to the <a href="#">terms and conditions</a>
-                        </label>
-                    </div>
-                </div>
-                <div class="field is-grouped is-grouped-right">
-                    <button class="button is-link is-rounded">Sign Up</button>
-                </div>
-            
-            </form>
-        </div>
-    </div>
-</div>
-
-
+{% from "_formhelpers.html" import render_field %}
+<form method="post">
+  <dl>
+    {{ render_field(form.username, class="form-control") }}
+    {{ render_field(form.name, class="form-control") }}
+    {{ render_field(form.surname, class="form-control") }}
+    {{ render_field(form.email, class="form-control") }}
+    {{ render_field(form.password, class="form-control") }}
+    {{ render_field(form.confirm, class="form-control") }}
+    {{ render_field(form.city, class="form-control") }}
+  </dl>
+  <button type="submit" class="btn btn-primary">Submit</button>
+</form>
 
 {% endblock %}
