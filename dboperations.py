@@ -7,25 +7,35 @@ url = os.getenv("DATABASE_URL")
 
 
 def isLogin(username, password):
+    isCompany = True
+    isConsumer = True
     with dbapi2.connect(url) as connection:
         cursor = connection.cursor()
-        query = "SELECT * FROM public.company WHERE username = %s"
-        cursor.execute(query, (username, ))
-        user = cursor.fetchone()
-
-        if user is None:
-            cursor.close()
-            return "nouser"
+        queryCompany = "SELECT * FROM public.company WHERE username = %s"
+        cursor.execute(queryCompany, (username, ))
+        company = cursor.fetchone()
+        
+        if company is None:
+            isCompany = False
         else:
             columns = list(cursor.description[i][0] for i in range(0, len(cursor.description)))
-            user = dict(zip(columns, cursor.fetchone()))
-            cursor.close()
-            if user['password'] == password:
-                return "success"
-            else:
-                return "wrong password" 
+            cmp = dict(zip(columns, company))
+            return "company", cmp
         
+        queryConsumer = "SELECT * FROM public.consumer WHERE username = %s"
+        cursor.execute(queryConsumer, (username, ))
+        consumer = cursor.fetchone()
         
+        if consumer is None:
+            isConsumer = False
+        else:
+            columns = list(cursor.description[i][0] for i in range(0, len(cursor.description)))
+            cnmer = dict(zip(columns, consumer))
+            return "consumer", cnmer
+        
+        if not(isCompany or isConsumer):
+            return "none"
+               
 def getAllCities():
     with dbapi2.connect(url) as connection:
         cursor = connection.cursor()

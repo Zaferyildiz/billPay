@@ -22,18 +22,39 @@ def login():
         username = form.username.data
         passwordInput = form.password.data
         res = isLogin(username, passwordInput)
-        if res == "nouser":
-            flash("There is no user with this username", "danger")
-            error = "There is no user with this username"
-            return redirect(url_for("login"))
-        elif res == "wrongpassword":
-            flash("Your password is wrong! Please try again!", "danger")
-            return redirect(url_for("login"))
+        if res[0] == "company":
+            company = res[1]
+            if company['password'] == passwordInput:
+                flash("Your login is successfull company x", "success")
+                session['loggedin'] = True
+                session['username'] = company['username']
+                session['role'] = "company"
+                return redirect(url_for("index"))
+            else:
+                flash("Your password is wrong! Please try again!", "danger")
+                return redirect(url_for("login"))
+        elif res[0] == "consumer":
+            consumer = res[1]
+            if consumer['password'] == passwordInput:
+                flash("Your login is successfull consumer x", "success")
+                session['loggedin'] = True
+                session['username'] = company['username']
+                session['role'] = "consumer"
+                return redirect(url_for("index"))
+            else:
+                flash("Your password is wrong! Please try again!", "danger")
+                return redirect(url_for("login"))
         else:
-            return redirect(url_for("index"))
+            flash("There is no user with this username", "danger")
+            return redirect(url_for("login"))
     else: 
         return render_template("login.html", form=form)
 
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("index"))
 
 @app.route("/company/register", methods = ["GET", "POST"])
 def companyRegister():
