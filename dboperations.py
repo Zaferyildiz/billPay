@@ -48,7 +48,6 @@ def getAllCities():
             dc['id'] = ct[0]
             dc['name'] = ct[1]
             city.append(dc)
-        
         return city
 
 def getAllServiceTypes():

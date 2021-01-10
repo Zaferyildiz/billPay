@@ -1,9 +1,13 @@
 {% extends "layout.html" %}
-{% block title %}My Bills{% endblock %}
+{% block title %}Log In{% endblock %}
+
+{% block pageTitle %}
+    Log In
+{% endblock pageTitle %}
 
 {% block content%}
 
-{% from "_formhelpers.html" import render_field %}
+{% from "includes/_formhelpers.html" import render_field %}
 <form method="post">
   <dl>
     {{ render_field(form.username, class="form-control") }}
@@ -13,3 +17,4 @@
 </form>
 
 {% endblock %}
+

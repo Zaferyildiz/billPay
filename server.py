@@ -2,11 +2,13 @@ from wtforms import Form, StringField, TextAreaField, SelectField, PasswordField
 from flask import Flask, render_template, request, redirect, session, url_for
 from datetime import datetime
 from passlib.hash import pbkdf2_sha256 as hasher
+from functools import wraps
 import psycopg2 as dbapi2
 import os
 import sys
 from dboperations import *
 from forms import *
+from decorator import *
 
 app = Flask(__name__)
 app.secret_key = "super secret key"
@@ -38,7 +40,7 @@ def login():
             if consumer['password'] == passwordInput:
                 flash("Your login is successfull consumer x", "success")
                 session['loggedin'] = True
-                session['username'] = company['username']
+                session['username'] = consumer['username']
                 session['role'] = "consumer"
                 return redirect(url_for("index"))
             else:
@@ -49,7 +51,6 @@ def login():
             return redirect(url_for("login"))
     else: 
         return render_template("login.html", form=form)
-
 
 @app.route("/logout")
 def logout():
@@ -68,13 +69,13 @@ def companyRegister():
         cityId = form.city.data
         saveCompany(username, name, email, password, serviceTypeId, cityId)  
         flash("You have succesfully registered!", "success")
-        return redirect("/company/register")
+        return redirect(url_for("companyRegister"))
     else:
         city = getAllCities()
         servicetype = getAllServiceTypes()
         form.servicetype.choices = [(s['id'], s['name']) for s in servicetype]
         form.city.choices = [(c['id'], c['name']) for c in city]    
-        return render_template("companyRegister.html", form=form)
+        return render_template("/company/register.html", form=form)
         
 
 @app.route("/consumer/register", methods = ["GET", "POST"])
@@ -93,23 +94,25 @@ def consumerRegister():
     else:
         city = getAllCities()
         form.city.choices = [(c['id'], c['name']) for c in city]    
-        return render_template("consumerRegister.html", form=form)
+        return render_template("consumer/register.html", form=form)
 
 @app.route("/myBills")
-def myBillPage():
-    return render_template("myBill.html")
+@isConsumer
+def myBills():
+    return render_template("consumer/myBill.html")
 
 @app.route("/donate")
+@isConsumer
 def donationBills():
-    return render_template("donate.html")
+    return render_template("consumer/donate.html")
 
 @app.route("/bankAccount")
 def bankAccount():
     return render_template("bankAccount.html")
 
-@app.route("/outage")
-def outage():
-    return render_template("outages.html")
+@app.route("/outages")
+def outages():
+    return render_template("consumer/outages.html")
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port="8080", debug=True)
