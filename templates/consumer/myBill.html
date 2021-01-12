@@ -11,30 +11,29 @@
     <thead>
       <tr>
         <th scope="col">#</th>
-        <th scope="col">First</th>
-        <th scope="col">Last</th>
-        <th scope="col">Handle</th>
+        <th scope="col">Company Name</th>
+        <th scope="col">Service Type</th>
+        <th scope="col">Charge</th>
+        <th>Pay</th>
+        <th>Share</th>
       </tr>
     </thead>
     <tbody>
+      {% for bill in bills %}
       <tr>
         <th scope="row">1</th>
-        <td>Mark</td>
-        <td>Otto</td>
-        <td>@mdo</td>
+        <td>BEDAŞ</td>
+        <td>{{bill['servicetype']}}</td>
+        <td>{{bill['charge']}}</td>
+        <td>
+          <form method="post" action="{{ url_for('myBills', billId=bill['id']) }}">
+            <button type="submit" class="btn btn-primary" title="Pay!">Pay</button>
+          </form>
+        </td>
+        <td><button type="button" class="btn btn-warning" id="editButton" > Share! </button></td>
       </tr>
-      <tr>
-        <th scope="row">2</th>
-        <td>Jacob</td>
-        <td>Thornton</td>
-        <td>@fat</td>
-      </tr>
-      <tr>
-        <th scope="row">3</th>
-        <td>Larry</td>
-        <td>the Bird</td>
-        <td>@twitter</td>
-      </tr>
+      {% endfor %}
+      
     </tbody>
   </table>
 

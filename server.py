@@ -6,6 +6,7 @@ from functools import wraps
 import psycopg2 as dbapi2
 import os
 import sys
+from random import *
 from dboperations import *
 from forms import *
 from decorator import *
@@ -26,9 +27,10 @@ def login():
         res = isLogin(username, passwordInput)
         if res[0] == "company":
             company = res[1]
-            if company['password'] == passwordInput:
-                flash("Your login is successfull company x", "success")
+            if hasher.verify(passwordInput, company['password']):
+                flash("Your login is successfull", "success")
                 session['loggedin'] = True
+                session['id'] = company['id']
                 session['username'] = company['username']
                 session['role'] = "company"
                 return redirect(url_for("index"))
@@ -37,9 +39,10 @@ def login():
                 return redirect(url_for("login"))
         elif res[0] == "consumer":
             consumer = res[1]
-            if consumer['password'] == passwordInput:
+            if hasher.verify(passwordInput, consumer['password']):
                 flash("Your login is successfull consumer x", "success")
                 session['loggedin'] = True
+                session['id'] = consumer['id']
                 session['username'] = consumer['username']
                 session['role'] = "consumer"
                 return redirect(url_for("index"))
@@ -64,7 +67,7 @@ def companyRegister():
         username = form.username.data
         name = form.name.data
         email = form.email.data
-        password = form.password.data
+        password = hasher.hash(form.password.data)
         serviceTypeId = form.servicetype.data
         cityId = form.city.data
         saveCompany(username, name, email, password, serviceTypeId, cityId)  
@@ -86,7 +89,7 @@ def consumerRegister():
         name = form.name.data
         surname = form.surname.data
         email = form.email.data
-        password = form.password.data
+        password = hasher.hash(form.password.data)
         cityId = form.city.data
         saveConsumer(username, name, surname, email, password, cityId)    
         return redirect("/")
@@ -96,10 +99,42 @@ def consumerRegister():
         form.city.choices = [(c['id'], c['name']) for c in city]    
         return render_template("consumer/register.html", form=form)
 
-@app.route("/myBills")
+@app.route("/makeoutinvoice")
+def makeOutInvoice():
+    consumers = getAllConsumer()
+    return render_template("company/makeinvoice.html", consumers=consumers)
+
+@app.route("/createInvoice/<int:consumerId>", methods=["GET", "POST"])
+def createInvoice(consumerId):
+    consumer = getConsumer(consumerId)
+    charge = "{:.2f}".format(random() * 100 + 40)
+
+    if request.method == "POST":
+        date = datetime.today()
+        #sevenday = datetime.timedelta(days=7)
+        deadline = date
+        company = getCompany(session['username'])
+        makeInvoice(date, deadline, company['id'], company['servicetypeid'], consumerId, charge) 
+        flash("Invoice is created","Success")
+        return redirect(url_for("makeOutInvoice"))   
+    else:
+        return render_template("company/createInvoice.html", consumer=consumer, charge=charge)
+
+@app.route("/myBills/", defaults={'billId': None}, methods=["GET","POST"])
+@app.route("/myBills/<string:billId>", methods=["GET","POST"])
 @isConsumer
-def myBills():
-    return render_template("consumer/myBill.html")
+def myBills(billId):
+    if request.method == "POST":
+        deleteBill(billId)
+        return redirect(url_for("myBills"))
+    else:
+        bills = getMyBills(session['id'])
+        return render_template("consumer/myBill.html", bills=bills)
+
+"""
+def deleteConsumer(consumerId):
+    deleteCon(consumerId)
+    return redirect("/company/makeinvoice.html")"""
 
 @app.route("/donate")
 @isConsumer
