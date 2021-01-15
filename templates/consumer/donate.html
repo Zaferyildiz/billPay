@@ -11,30 +11,29 @@
     <thead>
       <tr>
         <th scope="col">#</th>
-        <th scope="col">First</th>
-        <th scope="col">Last</th>
-        <th scope="col">Handle</th>
+        <th scope="col">Company Name</th>
+        <th scope="col">Service Type</th>
+        <th scope="col">Charge</th>
+        <th scope="col">Deadline</th>
+        <th>Pay</th>
       </tr>
     </thead>
     <tbody>
+      {% for index in range(donatedBills |length)%}
       <tr>
-        <th scope="row">1</th>
-        <td>Mark</td>
-        <td>Otto</td>
-        <td>@mdo</td>
+        <td scope="row">{{index+1}}</td>
+        <td>{{donatedBills[index]['companyname']}}</td>
+        <td>{{donatedBills[index]['servicetype']}}</td>
+        <td>{{donatedBills[index]['charge']}}</td>
+        <td> {{datetime.strptime(donatedBills[index]['deadline'], "%Y-%m-%d")}}</td>
+        <td>
+          <form method="post" action="{{ url_for('myBills', billId=donatedBills[index]['id']) }}">
+            <button type="submit" class="btn btn-primary" title="Pay!">Pay</button>
+          </form>
+        </td>
       </tr>
-      <tr>
-        <th scope="row">2</th>
-        <td>Jacob</td>
-        <td>Thornton</td>
-        <td>@fat</td>
-      </tr>
-      <tr>
-        <th scope="row">3</th>
-        <td>Larry</td>
-        <td>the Bird</td>
-        <td>@twitter</td>
-      </tr>
+      {% endfor %}
+      
     </tbody>
   </table>
 

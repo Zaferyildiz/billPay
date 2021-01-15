@@ -7,7 +7,7 @@ import psycopg2 as dbapi2
 import os
 import sys
 from random import *
-from dboperations import *
+from db import *
 from forms import *
 from decorator import *
 
@@ -80,6 +80,32 @@ def companyRegister():
         form.city.choices = [(c['id'], c['name']) for c in city]    
         return render_template("/company/register.html", form=form)
         
+@app.route("/company/profile", methods = ["GET", "POST"])
+@isCompany
+def companyProfile():
+    form = CompanyRegister(request.form)
+    if request.method == "POST":
+        companyId = session['id']
+        username = form.username.data
+        name = form.name.data
+        email = form.email.data
+        serviceTypeId = form.servicetype.data
+        cityId = form.city.data
+        updateCompany(companyId, username, name, email, serviceTypeId, cityId)
+        return redirect(url_for("companyProfile"))
+    else:
+        company = getCompany(session['id'])
+        form.username.default = company['username']
+        form.name.default = company['name']
+        form.email.default = company['email']
+        city = getAllCities()
+        form.city.choices = [(c['id'], c['name']) for c in city] 
+        form.city.default = company['cityid']
+        servicetypes = getAllServiceTypes()
+        form.servicetype.choices = [(s['id'], s['name']) for s in servicetypes]
+        form.servicetype.default = company['servicetypeid']
+        form.process()
+        return render_template("company/profile.html", form=form)
 
 @app.route("/consumer/register", methods = ["GET", "POST"])
 def consumerRegister():
@@ -92,12 +118,54 @@ def consumerRegister():
         password = hasher.hash(form.password.data)
         cityId = form.city.data
         saveConsumer(username, name, surname, email, password, cityId)    
-        return redirect("/")
-        
+        return redirect("/")     
     else:
         city = getAllCities()
         form.city.choices = [(c['id'], c['name']) for c in city]    
         return render_template("consumer/register.html", form=form)
+
+@app.route("/consumer/profile", methods = ["GET", "POST"])
+@isConsumer
+def consumerProfile():
+    form = ConsumerRegister(request.form)
+    if request.method == "POST":
+        consumerId = session['id']
+        username = form.username.data
+        name = form.name.data
+        surname = form.surname.data
+        email = form.email.data
+        cityId = form.city.data
+        updateConsumer(consumerId, username, name, surname, email, cityId)
+        return redirect(url_for("consumerProfile"))
+    else:
+        consumer = getConsumer(session['id'])
+        form.username.default = consumer['username']
+        form.name.default = consumer['name']
+        form.surname.default = consumer['surname']
+        form.email.default = consumer['email']
+        city = getAllCities()
+        form.city.choices = [(c['id'], c['name']) for c in city] 
+        form.city.default = consumer['cityid']
+        form.process()
+        return render_template("consumer/profile.html", form=form)
+
+@app.route("/consumer/profile/delete", methods = ["POST"])
+@isConsumer
+def consumerDelete():
+    form = ConsumerRegister(request.form)
+    if request.method == "POST":
+        consumerId = session['id']
+        deleteConsumer(consumerId)
+        session.clear()
+        return redirect(url_for("index"))
+
+@app.route("/company/profile/delete", methods = ["POST"])
+@isCompany
+def companyDelete():
+    companyId = session['id']
+    deleteCompany(companyId)
+    session.clear()
+    return redirect(url_for("index"))
 
 @app.route("/makeoutinvoice")
 def makeOutInvoice():
@@ -131,15 +199,17 @@ def myBills(billId):
         bills = getMyBills(session['id'])
         return render_template("consumer/myBill.html", bills=bills)
 
-"""
-def deleteConsumer(consumerId):
-    deleteCon(consumerId)
-    return redirect("/company/makeinvoice.html")"""
+@app.route("/myBills/donateBill/<string:billId>", methods=["POST"])
+@isConsumer
+def shareBill(billId):
+    billShare(billId)
+    return redirect(url_for("myBills"))
 
 @app.route("/donate")
 @isConsumer
 def donationBills():
-    return render_template("consumer/donate.html")
+    data = getDonatedBills()
+    return render_template("consumer/donate.html", donatedBills=data)
 
 @app.route("/bankAccount")
 def bankAccount():

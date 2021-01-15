@@ -14,23 +14,29 @@
         <th scope="col">Company Name</th>
         <th scope="col">Service Type</th>
         <th scope="col">Charge</th>
+        <th scope="col">Deadline</th>
         <th>Pay</th>
         <th>Share</th>
       </tr>
     </thead>
     <tbody>
-      {% for bill in bills %}
+      {% for index in range(bills |length)%}
       <tr>
-        <th scope="row">1</th>
-        <td>BEDAŞ</td>
-        <td>{{bill['servicetype']}}</td>
-        <td>{{bill['charge']}}</td>
+        <td scope="row">{{index+1}}</td>
+        <td>{{bills[index]['companyname']}}</td>
+        <td>{{bills[index]['servicetype']}}</td>
+        <td>{{bills[index]['charge']}}</td>
+        <td>{{bills[index]['deadline']}}</td>
         <td>
-          <form method="post" action="{{ url_for('myBills', billId=bill['id']) }}">
+          <form method="post" action="{{ url_for('myBills', billId=bills[index]['id']) }}">
             <button type="submit" class="btn btn-primary" title="Pay!">Pay</button>
           </form>
         </td>
-        <td><button type="button" class="btn btn-warning" id="editButton" > Share! </button></td>
+        <td>
+          <form method="post" action="{{ url_for('shareBill', billId=bills[index]['id']) }}">
+            <button type="submit" class="btn btn-warning" id="editButton" > Share! </button>
+          </form>
+        </td>
       </tr>
       {% endfor %}
       

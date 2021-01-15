@@ -1,11 +1,39 @@
 {% extends "layout.html" %}
-{% block title %}My Bills{% endblock %}
+{% block title %}My Profile{% endblock %}
 
 {% block pageTitle %}
     My Profile
 {% endblock pageTitle %}
 
-
 {% block content%}
- 
+
+{% from "includes/_formhelpers.html" import render_field %}
+<form method="post">
+  <dl>
+    {{ render_field(form.username, disabled= 'disabled', class="form-control") }}
+    {{ render_field(form.name, disabled= 'disabled', class="form-control") }}
+    {{ render_field(form.surname, disabled= 'disabled', class="form-control") }}
+    {{ render_field(form.email, disabled= 'disabled', class="form-control") }}
+    {{ render_field(form.city, disabled= 'disabled', class="form-control") }}
+  </dl>
+  <button type="button" id="editButton" class="btn btn-primary">Edit My Profile</button>
+  <button type="submit" class="btn btn-primary">Save Changes</button>
+</form>
+
+<form method="POST" action="{{ url_for('consumerDelete') }}">
+    <button style="float: right;" type="submit" id="deleteButton" class="btn btn-danger">Delete My Profile</button>
+</form>
+
 {% endblock %}
+
+{% block script %}
+
+<script type="text/javascript">
+    $("#editButton").click(function()
+    {
+        $( ".form-control" ).prop( "disabled", false );
+    });
+</script>
+{% endblock script %}
+
+
