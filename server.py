@@ -167,12 +167,14 @@ def companyDelete():
     session.clear()
     return redirect(url_for("index"))
 
-@app.route("/makeoutinvoice")
-def makeOutInvoice():
+@app.route("/consumers")
+@isCompany
+def viewConsumers():
     consumers = getAllConsumer()
-    return render_template("company/makeinvoice.html", consumers=consumers)
+    return render_template("company/viewConsumers.html", consumers=consumers)
 
 @app.route("/createInvoice/<int:consumerId>", methods=["GET", "POST"])
+@isCompany
 def createInvoice(consumerId):
     consumer = getConsumer(consumerId)
     charge = "{:.2f}".format(random() * 100 + 40)
@@ -183,9 +185,40 @@ def createInvoice(consumerId):
         company = getCompany(session['id'])
         makeInvoice(date, deadline, company['id'], company['servicetypeid'], consumerId, charge) 
         flash("Invoice is created","Success")
-        return redirect(url_for("makeOutInvoice"))   
+        return redirect(url_for("viewConsumers"))   
     else:
         return render_template("company/createInvoice.html", consumer=consumer, charge=charge)
+
+@app.route("/invoicesOfConsumer/<int:consumerId>", methods=["GET", "POST"])
+@isCompany
+def viewInvoicesofConsumer(consumerId):
+    invoices = getInvoiceofConsumer(consumerId)
+    if request.method == "POST":
+        editInvoice(date, deadline, company['id'], company['servicetypeid'], consumerId, charge) 
+        flash("Invoice is created","Success")
+        return redirect(url_for("viewInvoice"))   
+    else:
+        return render_template("company/invoicesofConsumer.html", invoices=invoices)
+
+
+@app.route("/invoice/<int:billId>", methods=["GET", "POST"])
+@isCompany
+def viewInvoice(billId):
+    invoice = getInvoice(billId)
+    form = InvoiceEdit(request.form)
+    if request.method == "POST":
+        invoiceDate = form.invoiceDate.data
+        deadline = form.deadline.data
+        charge = form.charge.data
+        editInvoice(billId, invoiceDate, deadline, charge) 
+        return redirect(url_for("viewInvoice", billId=billId))   
+    else:
+        form.invoiceDate.default = invoice['invoicedate']
+        form.charge.default = invoice['charge']
+        form.deadline.default = invoice['deadline']
+        form.process()
+        return render_template("company/viewInvoice.html", invoice=invoice, form=form)
+
 
 @app.route("/myBills/", defaults={'billId': None}, methods=["GET","POST"])
 @app.route("/myBills/<string:billId>", methods=["GET","POST"])
@@ -225,4 +258,4 @@ def outages():
     return render_template("consumer/outages.html")
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port="38801", debug=True)
+    app.run(host="127.0.0.1", port="5000", debug=True)

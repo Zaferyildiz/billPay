@@ -35,6 +35,63 @@ def isLogin(username, password):
         if not(isCompany or isConsumer):
             return "none"
 
+def getInvoice(billId):
+    with dbapi2.connect(url) as connection:
+        cursor = connection.cursor()
+        query = """SELECT * FROM BILL WHERE BILL.ID = %s """
+        cursor.execute(query, (billId, ))
+        bill = cursor.fetchone()
+        columns = list(cursor.description[i][0] for i in range(0, len(cursor.description)))
+        cursor.close()
+        data = dict(zip(columns, bill))
+        return data
+
+def editInvoice(billId, invoiceDate, deadline, charge):
+    with dbapi2.connect(url) as connection:
+        cursor = connection.cursor()
+        query = """
+            UPDATE BILL
+            SET INVOICEDATE = %s,
+            DEADLINE = %s,
+            CHARGE = %s
+            WHERE BILL.ID = %s;"""
+        cursor.execute(query, (invoiceDate, deadline, charge, billId ))
+        cursor.close()
+        
+
+def createBankAccount(name, iban, balance):
+    with dbapi2.connect(url) as connection:
+        cursor = connection.cursor()
+        query = """INSERT INTO BANKACCOUNT (NAME, IBAN, BALANCE) VALUES(%s,%s,%s);"""
+        cursor.execute(query, (name, iban, balance))
+        cursor.close()
+
+
+def createOutage(startDate, endDate, serviceTypeId, companyId, cityId):
+    with dbapi2.connect(url) as connection:
+        cursor = connection.cursor()
+        query = """INSERT INTO OUTAGE (STARTDATE, ENDDATE, SERVICETYPEID, COMPANYID, CITYID) VALUES(%s,%s,%s,%s,%s);"""
+        cursor.execute(query, (startDate, endDate, serviceTypeId, companyId, cityId))
+        cursor.close()
+
+def getInvoiceofConsumer(consumerId):
+    with dbapi2.connect(url) as connection:
+        cursor = connection.cursor()
+        query = """
+        SELECT BILL.ID as id, BILL.CONSUMERID as consumerId, BILL.CHARGE as charge, BILL.DEADLINE as deadline, SERVICETYPE.NAME as serviceType, CONSUMER.NAME as consumerName, CONSUMER.SURNAME as consumerSurname FROM BILL 
+        INNER JOIN CONSUMER ON BILL.CONSUMERID = CONSUMER.ID 
+        INNER JOIN SERVICETYPE ON BILL.SERVICETYPEID = SERVICETYPE.ID 
+        WHERE BILL.CONSUMERID = %s
+        """
+        cursor.execute(query, (consumerId, ))
+        bills = cursor.fetchall()
+        columns = [column[0] for column in cursor.description]
+        cursor.close()
+        data = []
+        for row in bills:
+            data.append(dict(zip(columns, row)))
+        return data
+
 def updateConsumer(consumerId, username, name, surname, email, cityId):
     with dbapi2.connect(url) as connection:
         cursor = connection.cursor()

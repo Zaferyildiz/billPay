@@ -6,13 +6,7 @@
 
 {% block content %}
 {% from "includes/_formhelpers.html" import render_field %}
-<div class="head">
 
-    <button type="button" class="btn btn-primary float-right" data-toggle="modal" data-target="#addStaffModal">
-      Make Out Invoice to All
-    </button>
-</div>
-            
     <table class="table table-striped">
         <thead>
           <tr>
@@ -20,6 +14,8 @@
             <th scope="col">Name</th>
             <th scope="col">Surname</th>
             <th scope="col">City</th>
+            <th scope="col">View Invoices</th>
+            <th scope="col">Create Invoice</th>
           </tr>
         </thead>
         <tbody>
@@ -30,16 +26,27 @@
                 <td>{{consumers[index].get('name')}}</td>
                 <td>{{consumers[index].get('surname')}}</td>
                 <td>Istanbul</td>
-                <td>
-                <div style="float:left">
-                  <a href="/createInvoice/{{consumers[index].get("id")}}">
-                    <button type="button" class="btn btn-primary" id="editButton" >
-                        Make Out Invoice
-                    </button>
-                  </a>
-                </div>
                 
+                <td>
+                  <div style="float:left">
+                    <a href="/createInvoice/{{consumers[index].get("id")}}">
+                      <button type="button" class="btn btn-primary">
+                          Make Out Invoice
+                      </button>
+                    </a>
+                  </div>
                 </td>
+
+                <td>
+                  <div style="float:left">
+                    <a href="/invoicesOfConsumer/{{consumers[index].get("id")}}">
+                      <button type="button" class="btn btn-warning">
+                          View Invoices
+                      </button>
+                    </a>
+                  </div>
+                </td>
+
               </tr>
               {% endfor %}
              

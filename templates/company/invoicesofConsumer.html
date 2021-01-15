@@ -1,0 +1,54 @@
+{% extends 'layout.html' %}
+
+{% block pageTitle %}
+    Invoices of  {{invoices[0]['consumername']}} {{invoices[0]['consumersurname']}}
+{% endblock pageTitle %}
+
+{% block content %}
+{% from "includes/_formhelpers.html" import render_field %}
+
+    <table class="table table-striped">
+        <thead>
+          <tr>
+            <th scope="col">No</th>
+            <th scope="col">Charge</th>
+            <th scope="col">Deadline</th>
+            <th scope="col">Edit</th>
+            <th scope="col">Delete</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+              {% for index in range(invoices |length) %}              
+              <tr>       
+                <th scope="row">{{index+1}}</th>
+                <td>{{invoices[index]['charge']}} </td>
+                <td>{{invoices[index]['deadline']| strftime}} </td>
+    
+                <td>
+                  <div style="float:left">
+                    <a href="/invoice/{{invoices[index].get('id')}}">
+                      <button type="button" class="btn btn-warning">
+                          Edit Invoice
+                      </button>
+                    </a>
+                  </div>
+                </td>
+
+                <td>
+                    <div style="float:left">
+                      <a href="/invoice/{{invoices[index].get('id')}}">
+                        <button type="button" class="btn btn-danger">
+                            Delete
+                        </button>
+                      </a>
+                    </div>
+                </td>
+
+              </tr>
+              {% endfor %}
+             
+        </tbody>
+      </table>
+      <br>
+{% endblock content %}
