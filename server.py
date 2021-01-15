@@ -1,6 +1,6 @@
 from wtforms import Form, StringField, TextAreaField, SelectField, PasswordField, validators
 from flask import Flask, render_template, request, redirect, session, url_for
-from datetime import datetime
+from datetime import datetime, timedelta
 from passlib.hash import pbkdf2_sha256 as hasher
 from functools import wraps
 import psycopg2 as dbapi2
@@ -179,9 +179,8 @@ def createInvoice(consumerId):
 
     if request.method == "POST":
         date = datetime.today()
-        #sevenday = datetime.timedelta(days=7)
-        deadline = date
-        company = getCompany(session['username'])
+        deadline = date + timedelta(days=7)
+        company = getCompany(session['id'])
         makeInvoice(date, deadline, company['id'], company['servicetypeid'], consumerId, charge) 
         flash("Invoice is created","Success")
         return redirect(url_for("makeOutInvoice"))   
@@ -198,6 +197,12 @@ def myBills(billId):
     else:
         bills = getMyBills(session['id'])
         return render_template("consumer/myBill.html", bills=bills)
+
+@app.template_filter('strftime')
+def _jinja2_filter_datetime(date, fmt=None):
+    native = date.replace(tzinfo=None)
+    format='%d/%m/%Y'
+    return native.strftime(format)
 
 @app.route("/myBills/donateBill/<string:billId>", methods=["POST"])
 @isConsumer
