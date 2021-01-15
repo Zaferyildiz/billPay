@@ -9,7 +9,7 @@ import sys
 class CompanyRegister(Form):
     username = StringField("User Name", validators=[validators.DataRequired(message="Please enter a user name")])
     name = StringField("Company Name", validators=[validators.DataRequired(message="Please enter a company name")])
-    email = StringField("E-mail", validators=[validators.Email(message= "Please enter a valid e-mail")])
+    #email = StringField("E-mail", validators=[validators.Email(message= "Please enter a valid e-mail")])
     password = PasswordField("Password", validators=[
             validators.DataRequired(message="Please enter a password"),
             validators.EqualTo(fieldname="confirm", message="Your passwords are not match")])
