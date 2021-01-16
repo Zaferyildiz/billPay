@@ -32,6 +32,7 @@ def login():
                 session['loggedin'] = True
                 session['id'] = company['id']
                 session['username'] = company['username']
+                session['cityid'] = company['cityid']
                 session['role'] = "company"
                 return redirect(url_for("index"))
             else:
@@ -44,6 +45,7 @@ def login():
                 session['loggedin'] = True
                 session['id'] = consumer['id']
                 session['username'] = consumer['username']
+                session['cityid'] = consumer['cityid']
                 session['role'] = "consumer"
                 return redirect(url_for("index"))
             else:
@@ -70,7 +72,8 @@ def companyRegister():
         password = hasher.hash(form.password.data)
         serviceTypeId = form.servicetype.data
         cityId = form.city.data
-        saveCompany(username, name, email, password, serviceTypeId, cityId)  
+        imageFile = form.logo.data
+        saveCompany(username, name, email, password, serviceTypeId, cityId, imageFile)  
         flash("You have succesfully registered!", "success")
         return redirect(url_for("companyRegister"))
     else:
@@ -104,6 +107,10 @@ def companyProfile():
         servicetypes = getAllServiceTypes()
         form.servicetype.choices = [(s['id'], s['name']) for s in servicetypes]
         form.servicetype.default = company['servicetypeid']
+        blob_data = company['logo']
+        path = "/static"
+        open(path, 'wb').write(blob_data[1])
+        print(blob_data[1])
         form.process()
         return render_template("company/profile.html", form=form)
 
@@ -243,6 +250,20 @@ def shareBill(billId):
     billShare(billId)
     return redirect(url_for("myBills"))
 
+@app.route("/createOutage", methods=["GET", "POST"])
+@isCompany
+def createOutage():
+    form = Outage(request.form)
+    if request.method == "POST":
+        startDate = form.startDate.data
+        endDate = form.endDate.data
+        companyId = session['id']
+        addOutage(startDate, endDate, companyId)
+        flash("Outage is created", "success")
+        return redirect(url_for("createOutage"))
+    else:
+        return render_template("/company/createOutage.html", form=form)
+
 @app.route("/donate")
 @isConsumer
 def donationBills():
@@ -254,8 +275,12 @@ def bankAccount():
     return render_template("bankAccount.html")
 
 @app.route("/outages")
+@isConsumer
 def outages():
-    return render_template("consumer/outages.html")
+    cityId = session['cityid']
+    outages = getOutages(cityId)
+    print(outages)
+    return render_template("consumer/outages.html", outages=outages)
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port="5000", debug=True)

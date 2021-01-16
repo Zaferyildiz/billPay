@@ -5,3 +5,4 @@ Flask-WTF>=0.14
 WTForms>=2.3.3
 WTForms-Components>=0.10.4
 passlib>=1.7.2
+email_validator>=1.0

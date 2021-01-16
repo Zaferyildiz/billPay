@@ -67,12 +67,31 @@ def createBankAccount(name, iban, balance):
         cursor.close()
 
 
-def createOutage(startDate, endDate, serviceTypeId, companyId, cityId):
+def addOutage(startDate, endDate, companyId):
     with dbapi2.connect(url) as connection:
         cursor = connection.cursor()
-        query = """INSERT INTO OUTAGE (STARTDATE, ENDDATE, SERVICETYPEID, COMPANYID, CITYID) VALUES(%s,%s,%s,%s,%s);"""
-        cursor.execute(query, (startDate, endDate, serviceTypeId, companyId, cityId))
+        query = """INSERT INTO OUTAGE (STARTDATE, ENDDATE, COMPANYID) VALUES(%s,%s,%s);"""
+        cursor.execute(query, (startDate, endDate, companyId))
         cursor.close()
+
+def getOutages(cityId):
+    with dbapi2.connect(url) as connection:
+        cursor = connection.cursor()
+        query = """
+            SELECT OUTAGE.ID as id, OUTAGE.STARTDATE as startDate, OUTAGE.ENDDATE as endDate, COMPANY.NAME as companyName, SERVICETYPE.NAME as serviceType, CITY.ID as cityId, CITY.NAME as city FROM OUTAGE
+            INNER JOIN COMPANY ON OUTAGE.COMPANYID = COMPANY.ID
+            INNER JOIN SERVICETYPE ON COMPANY.SERVICETYPEID = SERVICETYPE.ID
+            INNER JOIN CITY ON COMPANY.CITYID = CITY.ID 
+            WHERE OUTAGE.CITYID = %s
+        """
+        cursor.execute(query, (cityId, ))
+        data  = cursor.fetchall()
+        columns = [column[0] for column in cursor.description]
+        cursor.close()
+        outages = []
+        for row in data:
+            outages.append(dict(zip(columns, row)))
+        return outages
 
 def getInvoiceofConsumer(consumerId):
     with dbapi2.connect(url) as connection:
@@ -256,11 +275,11 @@ def getAllServiceTypes():
             servicetype.append(dc)
         return servicetype
 
-def saveCompany(username, name, email, password, serviceTypeId, cityId):
+def saveCompany(username, name, email, password, serviceTypeId, cityId, logo):
     with dbapi2.connect(url) as connection:
         cursor = connection.cursor()
-        query = """INSERT INTO COMPANY (USERNAME, NAME, EMAIL, PASSWORD, SERVICETYPEID, CITYID) VALUES(%s,%s,%s,%s,%s,%s); """
-        cursor.execute(query, (username, name,email,password, serviceTypeId, cityId) )
+        query = """INSERT INTO COMPANY (USERNAME, NAME, EMAIL, PASSWORD, SERVICETYPEID, CITYID, LOGO) VALUES(%s,%s,%s,%s,%s,%s,%s); """
+        cursor.execute(query, (username, name,email,password, serviceTypeId, cityId, logo) )
         connection.commit()
         cursor.close()
 

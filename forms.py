@@ -2,6 +2,7 @@ from wtforms import Form, StringField, TextAreaField, SelectField, PasswordField
 from wtforms.fields.html5 import DateField, EmailField
 from flask import Flask, render_template, request, redirect, session, url_for
 from datetime import datetime
+import email_validator
 
 
 class CompanyRegister(Form):
@@ -14,6 +15,7 @@ class CompanyRegister(Form):
     confirm = PasswordField("Enter your password again")
     servicetype = RadioField("Service Type", validate_choice=False)
     city = SelectField(u'City', validate_choice=False)
+    logo = FileField("Logo of your company")
 
 
 class ConsumerRegister(Form):
