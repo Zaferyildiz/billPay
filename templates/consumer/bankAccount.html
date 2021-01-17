@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+{% block title %}Bank Accounts{% endblock %}
+
+{% block pageTitle %}
+    My Bank Account
+{% endblock pageTitle %}
+
+{% block content%}
+
+    {% from "includes/_formhelpers.html" import render_field %}
+    <form method="post">
+        <dl>
+            {{ render_field(form.name, class="form-control col-4") }}
+            {{ render_field(form.iban, class="form-control col-4") }}
+            {{ render_field(form.balance, class="form-control col-4") }}
+        </dl>
+        
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+
+{% endblock %}

@@ -1,4 +1,4 @@
-from wtforms import Form, StringField, TextAreaField, SelectField, PasswordField, RadioField, DateField, FloatField, FileField, validators
+from wtforms import Form, StringField, TextAreaField, SelectField, PasswordField, BooleanField, RadioField, DateField, FloatField, FileField, validators
 from wtforms.fields.html5 import DateField, EmailField
 from flask import Flask, render_template, request, redirect, session, url_for
 from datetime import datetime
@@ -13,9 +13,9 @@ class CompanyRegister(Form):
             validators.DataRequired(message="Please enter a password"),
             validators.EqualTo(fieldname="confirm", message="Your passwords are not match")])
     confirm = PasswordField("Enter your password again")
-    servicetype = RadioField("Service Type", validate_choice=False)
+    servicetype = RadioField("Service Type", validators=[validators.DataRequired()])
     city = SelectField(u'City', validate_choice=False)
-    logo = FileField("Logo of your company")
+    check = BooleanField("I agree with terms and conditions", validators=[validators.DataRequired("You must accept terms and conditions")])
 
 
 class ConsumerRegister(Form):
@@ -28,6 +28,7 @@ class ConsumerRegister(Form):
             validators.EqualTo(fieldname="confirm", message="Your passwords are not match")])
     confirm = PasswordField("Enter your password again")
     city = SelectField(u'City', validate_choice=False)
+    check = BooleanField("I agree with terms and conditions", validators=[validators.DataRequired("You must accept terms and conditions")])
 
 
 class Login(Form):
@@ -43,7 +44,7 @@ class InvoiceEdit(Form):
 class BankAccount(Form):
     name = StringField("Bank Account Name", validators=[validators.DataRequired(message="Please give a name to your bank account")])
     iban = StringField("IBAN", validators=[validators.DataRequired(message="Please enter your IBAN number"), validators.Length(26, 26, "Your IBAN should contains of 26 characters")])
-    name = FloatField("Balance", validators=[validators.DataRequired(message="Please enter balance of your bank account")])
+    balance = FloatField("Balance", validators=[validators.DataRequired(message="Please enter balance of your bank account")])
 
 class Outage(Form):
     startDate = DateField(label="Start Date")

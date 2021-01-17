@@ -24,7 +24,7 @@ def isLogin(username, password):
         queryConsumer = "SELECT * FROM public.consumer WHERE username = %s"
         cursor.execute(queryConsumer, (username, ))
         consumer = cursor.fetchone()
-        
+        cursor.close()
         if consumer is None:
             isConsumer = False
         else:
@@ -62,10 +62,36 @@ def editInvoice(billId, invoiceDate, deadline, charge):
 def createBankAccount(name, iban, balance):
     with dbapi2.connect(url) as connection:
         cursor = connection.cursor()
-        query = """INSERT INTO BANKACCOUNT (NAME, IBAN, BALANCE) VALUES(%s,%s,%s);"""
+        query = """INSERT INTO BANKACCOUNT (NAME, IBAN, BALANCE) VALUES(%s,%s,%s) RETURNING ID;"""
         cursor.execute(query, (name, iban, balance))
+        bankAccountId = cursor.fetchone()[0]
+        cursor.close()
+        return bankAccountId
+
+def assignBankAccounttoConsumer(bankAccountId, consumerId):
+    with dbapi2.connect(url) as connection:
+        cursor = connection.cursor()
+        query = """UPDATE CONSUMER SET BANKACCOUNTID = %s WHERE CONSUMER.ID = %s"""
+        cursor.execute(query, (bankAccountId, consumerId))
         cursor.close()
 
+def getBankAccount(consumerId):
+    with dbapi2.connect(url) as connection:
+        consumer = getConsumer(consumerId)
+        bankAccountId = consumer['bankaccountid']
+        print(bankAccountId)
+        if bankAccountId is None:
+            nulldict = {}
+            return nulldict
+        else:
+            cursor = connection.cursor()
+            query = """SELECT * FROM BANKACCOUNT WHERE BANKACCOUNT.ID = %s"""
+            cursor.execute(query, (bankAccountId, ))
+            bankAccount = cursor.fetchone()
+            columns = list(cursor.description[i][0] for i in range(0, len(cursor.description)))
+            cursor.close()
+            data = dict(zip(columns, bankAccount))
+            return data
 
 def addOutage(startDate, endDate, companyId):
     with dbapi2.connect(url) as connection:
@@ -193,6 +219,7 @@ def billShare(billId):
         """
         cursor.execute(query, (billId, ))
         cursor.close()
+
         
 def deleteBill(billId):
     with dbapi2.connect(url) as connection:
@@ -275,11 +302,11 @@ def getAllServiceTypes():
             servicetype.append(dc)
         return servicetype
 
-def saveCompany(username, name, email, password, serviceTypeId, cityId, logo):
+def saveCompany(username, name, email, password, serviceTypeId, cityId):
     with dbapi2.connect(url) as connection:
         cursor = connection.cursor()
-        query = """INSERT INTO COMPANY (USERNAME, NAME, EMAIL, PASSWORD, SERVICETYPEID, CITYID, LOGO) VALUES(%s,%s,%s,%s,%s,%s,%s); """
-        cursor.execute(query, (username, name,email,password, serviceTypeId, cityId, logo) )
+        query = """INSERT INTO COMPANY (USERNAME, NAME, EMAIL, PASSWORD, SERVICETYPEID, CITYID) VALUES(%s,%s,%s,%s,%s,%s); """
+        cursor.execute(query, (username, name,email,password, serviceTypeId, cityId) )
         connection.commit()
         cursor.close()
 

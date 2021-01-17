@@ -72,8 +72,7 @@ def companyRegister():
         password = hasher.hash(form.password.data)
         serviceTypeId = form.servicetype.data
         cityId = form.city.data
-        imageFile = form.logo.data
-        saveCompany(username, name, email, password, serviceTypeId, cityId, imageFile)  
+        saveCompany(username, name, email, password, serviceTypeId, cityId)  
         flash("You have succesfully registered!", "success")
         return redirect(url_for("companyRegister"))
     else:
@@ -107,10 +106,6 @@ def companyProfile():
         servicetypes = getAllServiceTypes()
         form.servicetype.choices = [(s['id'], s['name']) for s in servicetypes]
         form.servicetype.default = company['servicetypeid']
-        blob_data = company['logo']
-        path = "/static"
-        open(path, 'wb').write(blob_data[1])
-        print(blob_data[1])
         form.process()
         return render_template("company/profile.html", form=form)
 
@@ -270,16 +265,33 @@ def donationBills():
     data = getDonatedBills()
     return render_template("consumer/donate.html", donatedBills=data)
 
-@app.route("/bankAccount")
+@app.route("/bankAccount", methods=["GET", "POST"])
+@isConsumer
 def bankAccount():
-    return render_template("bankAccount.html")
+    form = BankAccount(request.form)
+    if request.method == "POST" and form.validate():
+        name = form.name.data
+        iban = form.iban.data
+        balance = form.balance.data
+        bankAccountId = createBankAccount(name, iban, balance)
+        assignBankAccounttoConsumer(bankAccountId, session['id'])
+        return redirect(url_for("bankAccount"))
+    else:
+        account = getBankAccount(session['id'])
+        if not account:
+            return render_template("consumer/bankAccount.html", form=form)
+        else:
+            form.name.default = account['name']
+            form.iban.default = account['iban']
+            form.balance.default = account['balance']
+            form.process()
+            return render_template("consumer/bankAccount.html", form=form)
 
 @app.route("/outages")
 @isConsumer
 def outages():
     cityId = session['cityid']
     outages = getOutages(cityId)
-    print(outages)
     return render_template("consumer/outages.html", outages=outages)
 
 if __name__ == "__main__":
