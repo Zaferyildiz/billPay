@@ -2,6 +2,10 @@
 {% block title %}My Profile{% endblock %}
 
 {% block pageTitle %}
+  <form method="POST" action="{{ url_for('consumerDelete') }}">
+    <button style="float: right;" type="submit" id="deleteButton" class="btn btn-danger">Delete My Profile</button>
+  </form>
+
     My Profile
 {% endblock pageTitle %}
 
@@ -13,17 +17,15 @@
     {{ render_field(form.username, disabled= 'disabled', class="form-control") }}
     {{ render_field(form.name, disabled= 'disabled', class="form-control") }}
     {{ render_field(form.surname, disabled= 'disabled', class="form-control") }}
+    {{ render_field(form.identitynum, disabled= 'disabled', class="form-control") }}
     {{ render_field(form.email, disabled= 'disabled', class="form-control") }}
     {{ render_field(form.city, disabled= 'disabled', class="form-control") }}
+    {{ render_field(form.address, disabled= 'disabled', class="form-control") }}
   </dl>
   <button type="button" id="editButton" class="btn btn-primary">Edit My Profile</button>
   <button type="submit" class="btn btn-primary">Save Changes</button>
 </form>
-
-<form method="POST" action="{{ url_for('consumerDelete') }}">
-    <button style="float: right;" type="submit" id="deleteButton" class="btn btn-danger">Delete My Profile</button>
-</form>
-
+  
 {% endblock %}
 
 {% block script %}

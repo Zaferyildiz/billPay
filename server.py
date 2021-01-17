@@ -1,5 +1,6 @@
-from wtforms import Form, StringField, TextAreaField, SelectField, PasswordField, validators
 from flask import Flask, render_template, request, redirect, session, url_for
+from wtforms import Form, StringField, TextAreaField, SelectField, PasswordField, validators
+from flask_wtf import FlaskForm
 from datetime import datetime, timedelta
 from passlib.hash import pbkdf2_sha256 as hasher
 from functools import wraps
@@ -15,13 +16,16 @@ app = Flask(__name__)
 app.secret_key = "super secret key"
 
 @app.route("/")
-def index(): 
-    return render_template("index.html")
+def index():
+    nofcompany = getNumberofCompany()
+    nofconsumer = getNumberofConsumer()
+    nofcity = getNumberofCity()
+    return render_template("index.html", numberofConsumer=nofconsumer, numberofCompany=nofcompany, numberofCity=nofcity)
 
 @app.route("/login", methods = ["GET", "POST"])
 def login(): 
     form = Login(request.form)
-    if request.method == "POST":
+    if request.method == "POST" and form.validate():
         username = form.username.data
         passwordInput = form.password.data
         res = isLogin(username, passwordInput)
@@ -30,6 +34,7 @@ def login():
             if hasher.verify(passwordInput, company['password']):
                 flash("Your login is successfull", "success")
                 session['loggedin'] = True
+                session['user'] = company
                 session['id'] = company['id']
                 session['username'] = company['username']
                 session['cityid'] = company['cityid']
@@ -41,11 +46,10 @@ def login():
         elif res[0] == "consumer":
             consumer = res[1]
             if hasher.verify(passwordInput, consumer['password']):
-                flash("Your login is successfull consumer x", "success")
+                flash("Your login is successfull", "success")
                 session['loggedin'] = True
+                session['user'] = consumer
                 session['id'] = consumer['id']
-                session['username'] = consumer['username']
-                session['cityid'] = consumer['cityid']
                 session['role'] = "consumer"
                 return redirect(url_for("index"))
             else:
@@ -68,11 +72,12 @@ def companyRegister():
     if request.method == "POST" and form.validate(): 
         username = form.username.data
         name = form.name.data
+        taxnumber = form.taxnumber.data
         email = form.email.data
         password = hasher.hash(form.password.data)
         serviceTypeId = form.servicetype.data
         cityId = form.city.data
-        saveCompany(username, name, email, password, serviceTypeId, cityId)  
+        saveCompany(username, name, taxnumber, email, password, serviceTypeId, cityId)  
         flash("You have succesfully registered!", "success")
         return redirect(url_for("companyRegister"))
     else:
@@ -90,15 +95,17 @@ def companyProfile():
         companyId = session['id']
         username = form.username.data
         name = form.name.data
+        taxnumber = form.taxnumber.data
         email = form.email.data
         serviceTypeId = form.servicetype.data
         cityId = form.city.data
-        updateCompany(companyId, username, name, email, serviceTypeId, cityId)
+        updateCompany(companyId, username, name, taxnumber, email, serviceTypeId, cityId)
         return redirect(url_for("companyProfile"))
     else:
         company = getCompany(session['id'])
         form.username.default = company['username']
         form.name.default = company['name']
+        form.taxnumber.default = company['taxnumber']
         form.email.default = company['email']
         city = getAllCities()
         form.city.choices = [(c['id'], c['name']) for c in city] 
@@ -112,14 +119,16 @@ def companyProfile():
 @app.route("/consumer/register", methods = ["GET", "POST"])
 def consumerRegister():
     form = ConsumerRegister(request.form)
-    if request.method == "POST":
+    if request.method == "POST" and form.validate():
         username = form.username.data
         name = form.name.data
         surname = form.surname.data
+        identitynum = form.identitynum.data
         email = form.email.data
         password = hasher.hash(form.password.data)
         cityId = form.city.data
-        saveConsumer(username, name, surname, email, password, cityId)    
+        address = form.address.data
+        saveConsumer(username, name, surname, identitynum, email, password, cityId, address)    
         return redirect("/")     
     else:
         city = getAllCities()
@@ -131,23 +140,28 @@ def consumerRegister():
 def consumerProfile():
     form = ConsumerRegister(request.form)
     if request.method == "POST":
+        print("girdi2")
         consumerId = session['id']
         username = form.username.data
         name = form.name.data
         surname = form.surname.data
+        idnumber = form.identitynum.data
         email = form.email.data
         cityId = form.city.data
-        updateConsumer(consumerId, username, name, surname, email, cityId)
+        address = form.address.data
+        updateConsumer(consumerId, username, name, surname, idnumber, email, cityId, address)
         return redirect(url_for("consumerProfile"))
     else:
         consumer = getConsumer(session['id'])
         form.username.default = consumer['username']
         form.name.default = consumer['name']
         form.surname.default = consumer['surname']
+        form.identitynum.default = consumer['identitynum']
         form.email.default = consumer['email']
         city = getAllCities()
         form.city.choices = [(c['id'], c['name']) for c in city] 
         form.city.default = consumer['cityid']
+        form.address.default = consumer['address']
         form.process()
         return render_template("consumer/profile.html", form=form)
 
@@ -181,7 +195,7 @@ def createInvoice(consumerId):
     consumer = getConsumer(consumerId)
     charge = "{:.2f}".format(random() * 100 + 40)
 
-    if request.method == "POST":
+    if request.method == "POST" and form.validate():
         date = datetime.today()
         deadline = date + timedelta(days=7)
         company = getCompany(session['id'])
@@ -195,7 +209,7 @@ def createInvoice(consumerId):
 @isCompany
 def viewInvoicesofConsumer(consumerId):
     invoices = getInvoiceofConsumer(consumerId)
-    if request.method == "POST":
+    if request.method == "POST" and form.validate():
         editInvoice(date, deadline, company['id'], company['servicetypeid'], consumerId, charge) 
         flash("Invoice is created","Success")
         return redirect(url_for("viewInvoice"))   
@@ -208,7 +222,7 @@ def viewInvoicesofConsumer(consumerId):
 def viewInvoice(billId):
     invoice = getInvoice(billId)
     form = InvoiceEdit(request.form)
-    if request.method == "POST":
+    if request.method == "POST" and form.validate():
         invoiceDate = form.invoiceDate.data
         deadline = form.deadline.data
         charge = form.charge.data
@@ -226,7 +240,7 @@ def viewInvoice(billId):
 @app.route("/myBills/<string:billId>", methods=["GET","POST"])
 @isConsumer
 def myBills(billId):
-    if request.method == "POST":
+    if request.method == "POST" and form.validate():
         deleteBill(billId)
         return redirect(url_for("myBills"))
     else:
@@ -249,7 +263,7 @@ def shareBill(billId):
 @isCompany
 def createOutage():
     form = Outage(request.form)
-    if request.method == "POST":
+    if request.method == "POST" and form.validate():
         startDate = form.startDate.data
         endDate = form.endDate.data
         companyId = session['id']

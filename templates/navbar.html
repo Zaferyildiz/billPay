@@ -58,7 +58,7 @@
             
             {% if session['loggedin']%}
                 <li class="nav-item active">
-                    <a href="{{'consumer/profile' if session['role'] == 'consumer' else 'company/profile'}}" class="nav-link" role="button">{{session['username']}}</a>
+                    <a href="{{'/consumer/profile' if session['role'] == 'consumer' else '/company/profile'}}" class="nav-link" role="button">{{session['user']['name']}}</a>
                 </li>
 
                 <li class="nav-item active">

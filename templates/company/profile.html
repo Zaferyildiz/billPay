@@ -13,23 +13,22 @@
 
 {% from "includes/_formhelpers.html" import render_field %}
 
-<img src="/static/vodafone.png" alt="Girl in a jacket">
-
 <form method="post">
   <dl>
     {{ render_field(form.username, disabled= 'disabled', class="form-control") }}
     {{ render_field(form.name, disabled= 'disabled', class="form-control") }}
+    {{ render_field(form.taxnumber, disabled= 'disabled', class="form-control") }}
     {{ render_field(form.email, disabled= 'disabled', class="form-control") }}
-    {{ render_field(form.servicetype, disabled= 'disabled', class="form-control") }}
     {{ render_field(form.city, disabled= 'disabled', class="form-control") }}
-    
+    {{ render_field(form.servicetype, disabled= 'disabled') }}
   </dl>
-  <br>
-  <button type="submit" class="btn btn-primary" style="float: right;" >Save Changes</button>
-  <button type="button" id="editButton" style="float: right; position: relative; right: 15px;" class="btn btn-primary">Edit My Profile</button>
+  <button type="button" id="editButton" class="btn btn-primary">Edit My Profile</button>
+  <button type="submit" class="btn btn-primary" style="position: relative; left: 15px;" >Save Changes</button>
   
+  <br>
 </form>
-
+<br>
+<br>
 {% endblock %}  
 
 {% block script %}

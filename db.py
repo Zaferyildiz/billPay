@@ -137,7 +137,7 @@ def getInvoiceofConsumer(consumerId):
             data.append(dict(zip(columns, row)))
         return data
 
-def updateConsumer(consumerId, username, name, surname, email, cityId):
+def updateConsumer(consumerId, username, name, surname, idnumber, email, cityId, address):
     with dbapi2.connect(url) as connection:
         cursor = connection.cursor()
         query = """
@@ -145,26 +145,30 @@ def updateConsumer(consumerId, username, name, surname, email, cityId):
             SET USERNAME = %s,
             NAME = %s,
             SURNAME = %s,
+            IDENTITYNUM = %s,
             EMAIL = %s,
-            CITYID = %s
+            CITYID = %s,
+            ADDRESS = %s
             WHERE CONSUMER.ID = %s;
         """
-        cursor.execute(query, (username, name, surname, email, cityId, consumerId ))
+        cursor.execute(query, (username, name, surname, idnumber, email, cityId, address, consumerId))
+        connection.commit()
         cursor.close()
 
-def updateCompany(companyId, username, name, email, serviceTypeId, cityId):
+def updateCompany(companyId, username, name, taxnumber, email, serviceTypeId, cityId):
     with dbapi2.connect(url) as connection:
         cursor = connection.cursor()
         query = """
             UPDATE COMPANY
             SET USERNAME = %s,
             NAME = %s,
+            TAXNUMBER = %s,
             EMAIL = %s,
             CITYID = %s,
             SERVICETYPEID = %s
             WHERE COMPANY.ID = %s;
         """
-        cursor.execute(query, (username, name,  email, cityId, serviceTypeId, companyId ))
+        cursor.execute(query, (username, name, taxnumber, email, cityId, serviceTypeId, companyId ))
         cursor.close()
 
 def makeInvoice(invoiceDate, deadline, companyId, serviceTypeId, consumerId, charge):
@@ -302,18 +306,42 @@ def getAllServiceTypes():
             servicetype.append(dc)
         return servicetype
 
-def saveCompany(username, name, email, password, serviceTypeId, cityId):
+def saveCompany(username, name, taxnumber, email, password, serviceTypeId, cityId):
     with dbapi2.connect(url) as connection:
         cursor = connection.cursor()
-        query = """INSERT INTO COMPANY (USERNAME, NAME, EMAIL, PASSWORD, SERVICETYPEID, CITYID) VALUES(%s,%s,%s,%s,%s,%s); """
-        cursor.execute(query, (username, name,email,password, serviceTypeId, cityId) )
+        query = """INSERT INTO COMPANY (USERNAME, NAME, TAXNUMBER, EMAIL, PASSWORD, SERVICETYPEID, CITYID) VALUES(%s,%s,%s,%s,%s,%s,%s); """
+        cursor.execute(query, (username, name,taxnumber,email,password, serviceTypeId, cityId) )
         connection.commit()
         cursor.close()
 
-def saveConsumer(username, name, surname, email, password, cityId):
+def saveConsumer(username, name, surname, identitynum, email, password, cityId, address):
     with dbapi2.connect(url) as connection:
         cursor = connection.cursor()
-        query = """INSERT INTO CONSUMER (USERNAME, NAME, SURNAME, EMAIL, PASSWORD, CITYID) VALUES(%s,%s,%s,%s,%s,%s); """
-        cursor.execute(query, (username, name, surname, email, password, cityId) )
+        query = """INSERT INTO CONSUMER (USERNAME, NAME, SURNAME, IDENTITYNUM, EMAIL, PASSWORD, CITYID, ADDRESS) VALUES(%s,%s,%s,%s,%s,%s,%s,%s); """
+        cursor.execute(query, (username, name, surname, identitynum, email, password, cityId, address) )
         connection.commit()
         cursor.close()
+
+def getNumberofConsumer():
+    with dbapi2.connect(url) as connection:
+        cursor = connection.cursor()
+        cursor.execute("""SELECT COUNT(*) FROM CONSUMER""")
+        num = cursor.fetchone()
+        cursor.close()
+        return num[0]
+
+def getNumberofCompany():
+    with dbapi2.connect(url) as connection:
+        cursor = connection.cursor()
+        cursor.execute("""SELECT COUNT(*) FROM COMPANY""")
+        num = cursor.fetchone()
+        cursor.close()
+        return num[0]
+
+def getNumberofCity():
+    with dbapi2.connect(url) as connection:
+        cursor = connection.cursor()
+        cursor.execute("""SELECT COUNT(*) FROM CITY""")
+        num = cursor.fetchone()
+        cursor.close()
+        return num[0]
