@@ -7,10 +7,12 @@ from functools import wraps
 import psycopg2 as dbapi2
 import os
 import sys
-from random import *
+import string
+import random
 from db import *
 from forms import *
 from decorator import *
+import base64
 
 app = Flask(__name__)
 app.secret_key = "super secret key"
@@ -34,7 +36,6 @@ def login():
             if hasher.verify(passwordInput, company['password']):
                 flash("Your login is successfull", "success")
                 session['loggedin'] = True
-                session['user'] = company
                 session['id'] = company['id']
                 session['username'] = company['username']
                 session['cityid'] = company['cityid']
@@ -69,7 +70,7 @@ def logout():
 @app.route("/company/register", methods = ["GET", "POST"])
 def companyRegister():
     form = CompanyRegister(request.form)
-    if request.method == "POST" and form.validate(): 
+    if request.method == "POST": 
         username = form.username.data
         name = form.name.data
         taxnumber = form.taxnumber.data
@@ -77,7 +78,12 @@ def companyRegister():
         password = hasher.hash(form.password.data)
         serviceTypeId = form.servicetype.data
         cityId = form.city.data
-        saveCompany(username, name, taxnumber, email, password, serviceTypeId, cityId)  
+        logo = request.files['file']
+        print("filename")
+        print(logo)
+        encoded = base64.b64encode(logo.read())
+        print(encoded)
+        saveCompany(username, name, taxnumber, email, password, serviceTypeId, cityId, encoded)  
         flash("You have succesfully registered!", "success")
         return redirect(url_for("companyRegister"))
     else:
@@ -114,7 +120,8 @@ def companyProfile():
         form.servicetype.choices = [(s['id'], s['name']) for s in servicetypes]
         form.servicetype.default = company['servicetypeid']
         form.process()
-        return render_template("company/profile.html", form=form)
+        logo = getlogo(session['id'])
+        return render_template("company/profile.html", form=form, logo=logo)
 
 @app.route("/consumer/register", methods = ["GET", "POST"])
 def consumerRegister():
@@ -128,7 +135,7 @@ def consumerRegister():
         password = hasher.hash(form.password.data)
         cityId = form.city.data
         address = form.address.data
-        saveConsumer(username, name, surname, identitynum, email, password, cityId, address)    
+        saveConsumer(username, name, surname, identitynum, email, password, cityId, address, logo)    
         return redirect("/")     
     else:
         city = getAllCities()
@@ -193,28 +200,54 @@ def viewConsumers():
 @isCompany
 def createInvoice(consumerId):
     consumer = getConsumer(consumerId)
-    charge = "{:.2f}".format(random() * 100 + 40)
-
-    if request.method == "POST" and form.validate():
-        date = datetime.today()
-        deadline = date + timedelta(days=7)
-        company = getCompany(session['id'])
-        makeInvoice(date, deadline, company['id'], company['servicetypeid'], consumerId, charge) 
+    form = Invoice(request.form)
+    charge = "{:.2f}".format(random.random() * 100 + 40)
+    
+    if request.method == "POST":
+        billnum = form.billnumhidden.data
+        invoicedate = datetime.today()
+        deadline = form.deadline.data
+        charge = form.charge.data 
+        companyId = session['id']
+        makeInvoice(billnum, invoicedate, deadline, charge, companyId, consumerId) 
         flash("Invoice is created","Success")
         return redirect(url_for("viewConsumers"))   
     else:
-        return render_template("company/createInvoice.html", consumer=consumer, charge=charge)
+        dateoftoday = datetime.today()
+        deadline = dateoftoday + timedelta(days=7)
+        billnum = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(16))
+        form.name.default = consumer['name']
+        form.surname.default = consumer['surname']
+        form.billnum.default = billnum
+        form.billnumhidden.default = billnum
+        form.charge.default = charge
+        form.invoiceDate.default = dateoftoday
+        form.deadline.default = deadline
+        form.process()
+        return render_template("company/createInvoice.html", form=form, consumer=consumer, charge=charge)
 
 @app.route("/invoicesOfConsumer/<int:consumerId>", methods=["GET", "POST"])
 @isCompany
 def viewInvoicesofConsumer(consumerId):
     invoices = getInvoiceofConsumer(consumerId)
-    if request.method == "POST" and form.validate():
+    consumer = getConsumer(consumerId)
+    if request.method == "POST":
         editInvoice(date, deadline, company['id'], company['servicetypeid'], consumerId, charge) 
         flash("Invoice is created","Success")
         return redirect(url_for("viewInvoice"))   
     else:
-        return render_template("company/invoicesofConsumer.html", invoices=invoices)
+        return render_template("company/invoicesofConsumer.html", invoices=invoices, consumer=consumer)
+
+@app.route("/invoice/delete/<int:billId>/<int:consumerId>", methods=["POST"])
+@isCompany
+def deleteInvoice(billId, consumerId):
+    
+    if request.method == "POST":
+        deleteBill(billId)
+        flash("Invoice is deleted","Success")
+        return redirect(url_for("viewInvoicesofConsumer", consumerId=consumerId))   
+    else:
+        return redirect(url_for("viewInvoicesofConsumer", consumerId=consumerId))
 
 
 @app.route("/invoice/<int:billId>", methods=["GET", "POST"])
@@ -280,10 +313,9 @@ def donationBills():
     return render_template("consumer/donate.html", donatedBills=data)
 
 @app.route("/bankAccount", methods=["GET", "POST"])
-@isConsumer
 def bankAccount():
     form = BankAccount(request.form)
-    if request.method == "POST" and form.validate():
+    if request.method == "POST":
         name = form.name.data
         iban = form.iban.data
         balance = form.balance.data
@@ -293,13 +325,13 @@ def bankAccount():
     else:
         account = getBankAccount(session['id'])
         if not account:
-            return render_template("consumer/bankAccount.html", form=form)
+            return render_template("bankAccount.html", form=form)
         else:
             form.name.default = account['name']
             form.iban.default = account['iban']
             form.balance.default = account['balance']
             form.process()
-            return render_template("consumer/bankAccount.html", form=form)
+            return render_template("bankAccount.html", form=form)
 
 @app.route("/outages")
 @isConsumer

@@ -1,4 +1,4 @@
-from wtforms import Form, StringField, TextAreaField, SelectField, PasswordField, BooleanField, RadioField, DateField, FloatField, FileField, validators
+from wtforms import Form, StringField, TextAreaField, SelectField, PasswordField, BooleanField, HiddenField, RadioField, DateField, FloatField, FileField, validators
 from wtforms.validators import DataRequired, Email, Length, EqualTo
 from flask_wtf import FlaskForm
 from wtforms.fields.html5 import DateField, EmailField
@@ -6,7 +6,7 @@ from flask import Flask, render_template, request, redirect, session, url_for
 from datetime import datetime
 import email_validator
 
-class CompanyRegister(Form):
+class CompanyRegister(FlaskForm):
     username = StringField("User Name", validators=[DataRequired(message="Please enter a user name")])
     name = StringField("Company Name", validators=[DataRequired(message="Please enter a company name")])
     taxnumber = StringField("Tax Number", validators=[DataRequired("Please enter a tax number"), Length(10,10,"Your tax number must contain 10 characters")])
@@ -18,7 +18,7 @@ class CompanyRegister(Form):
     servicetype = RadioField("Service Type", validate_choice=False)
     city = SelectField(u'City', validate_choice=False)
     check = BooleanField("I agree with terms and conditions", validators=[DataRequired("You must accept terms and conditions")])
-    logo = FileField("Logo of your company")
+    file = FileField("Logo of your company")
 
 class ConsumerRegister(Form):
     username = StringField(label=("User Name"), validators=[DataRequired(message="Please enter a user name")])
@@ -38,6 +38,15 @@ class ConsumerRegister(Form):
 class Login(Form):
     username = StringField(label=("User Name"), validators=[validators.DataRequired(message="Please enter a user name")])
     password = PasswordField("Password", validators=[validators.DataRequired(message="Please enter a password")])
+
+class Invoice(Form):
+    name = StringField(label=("Name of the consumer"))
+    surname = StringField(label=("Surname of the consumer"))
+    billnum = StringField(label=("Invoice Number"))
+    billnumhidden = HiddenField()
+    invoiceDate = DateField(label="Invoice Date")
+    deadline = DateField(label="Deadline for payment")
+    charge = FloatField(label=("Charge"))
 
 class InvoiceEdit(Form):
     invoiceDate = DateField(label=("Invoice Date"))

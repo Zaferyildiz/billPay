@@ -1,54 +1,64 @@
 {% extends 'layout.html' %}
 
 {% block pageTitle %}
-    Invoices of  {{invoices[0]['consumername']}} {{invoices[0]['consumersurname']}}
+    
+    Invoices of  {{consumer['name']}} {{consumer['surname']}}
 {% endblock pageTitle %}
 
 {% block content %}
 {% from "includes/_formhelpers.html" import render_field %}
 
-    <table class="table table-striped">
-        <thead>
-          <tr>
-            <th scope="col">No</th>
-            <th scope="col">Charge</th>
-            <th scope="col">Deadline</th>
-            <th scope="col">Edit</th>
-            <th scope="col">Delete</th>
-          </tr>
-        </thead>
-        <tbody>
-          
-              {% for index in range(invoices |length) %}              
-              <tr>       
-                <th scope="row">{{index+1}}</th>
-                <td>{{invoices[index]['charge']}} </td>
-                <td>{{invoices[index]['deadline']| strftime}} </td>
-    
-                <td>
-                  <div style="float:left">
-                    <a href="/invoice/{{invoices[index].get('id')}}">
-                      <button type="button" class="btn btn-warning">
-                          Edit Invoice
-                      </button>
-                    </a>
-                  </div>
-                </td>
-
-                <td>
+    {% if (invoices |length) == 0 %}
+        <h1>This consumer has no bill currently!</h1>
+    {% else %}
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th scope="col">No</th>
+              <th scope="col">Invoice Date</th>
+              <th scope="col">Deadline</th>
+              <th scope="col">Charge</th>
+              <th scope="col">Edit</th>
+              <th scope="col">Delete</th>
+            </tr>
+          </thead>
+          <tbody>
+            
+                {% for index in range(invoices |length) %}              
+                <tr>       
+                  <th scope="row">{{index+1}}</th>
+                  <td>{{invoices[index]['invoicedate']| strftime}} </td>
+                  <td>{{invoices[index]['deadline']| strftime}} </td>
+                  <td>{{invoices[index]['charge']}} </td>
+      
+                  <td>
                     <div style="float:left">
                       <a href="/invoice/{{invoices[index].get('id')}}">
-                        <button type="button" class="btn btn-danger">
-                            Delete
+                        <button type="button" class="btn btn-warning">
+                            Edit Invoice
                         </button>
                       </a>
                     </div>
-                </td>
+                  </td>
 
-              </tr>
-              {% endfor %}
-             
-        </tbody>
-      </table>
-      <br>
+                  <td>
+                      <div style="float:left">
+                        <form method="POST" action="{{ url_for('deleteInvoice', billId=invoices[index]['id'], consumerId=invoices[index]['consumerid']) }}">
+                            <button type="submit" class="btn btn-danger">
+                                Delete
+                            </button>
+                        </form>
+                        
+                      </div>
+                  </td>
+
+                </tr>
+                {% endfor %}
+              
+          </tbody>
+        </table>
+        <br>
+    {% endif %}
+
+   
 {% endblock content %}

@@ -123,9 +123,10 @@ def getInvoiceofConsumer(consumerId):
     with dbapi2.connect(url) as connection:
         cursor = connection.cursor()
         query = """
-        SELECT BILL.ID as id, BILL.CONSUMERID as consumerId, BILL.CHARGE as charge, BILL.DEADLINE as deadline, SERVICETYPE.NAME as serviceType, CONSUMER.NAME as consumerName, CONSUMER.SURNAME as consumerSurname FROM BILL 
+        SELECT BILL.ID as id, BILL.CHARGE as charge, BILL.INVOICEDATE as invoicedate, BILL.DEADLINE as deadline, SERVICETYPE.NAME as serviceType, CONSUMER.ID as consumerid, CONSUMER.NAME as consumerName, CONSUMER.SURNAME as consumerSurname FROM BILL 
         INNER JOIN CONSUMER ON BILL.CONSUMERID = CONSUMER.ID 
-        INNER JOIN SERVICETYPE ON BILL.SERVICETYPEID = SERVICETYPE.ID 
+        INNER JOIN COMPANY ON BILL.COMPANYID = COMPANY.ID
+        INNER JOIN SERVICETYPE ON COMPANY.SERVICETYPEID = SERVICETYPE.ID 
         WHERE BILL.CONSUMERID = %s
         """
         cursor.execute(query, (consumerId, ))
@@ -171,11 +172,11 @@ def updateCompany(companyId, username, name, taxnumber, email, serviceTypeId, ci
         cursor.execute(query, (username, name, taxnumber, email, cityId, serviceTypeId, companyId ))
         cursor.close()
 
-def makeInvoice(invoiceDate, deadline, companyId, serviceTypeId, consumerId, charge):
+def makeInvoice(billnum, invoicedate, deadline, charge, companyId, consumerId):
     with dbapi2.connect(url) as connection:
         cursor = connection.cursor()
-        query = "INSERT INTO BILL (INVOICEDATE, DEADLINE, COMPANYID, SERVICETYPEID, CONSUMERID, CHARGE) VALUES(%s,%s,%s,%s,%s,%s);"
-        cursor.execute(query, (invoiceDate, deadline, companyId, serviceTypeId, consumerId, charge))
+        query = "INSERT INTO BILL (BILLNUM, INVOICEDATE, DEADLINE, CHARGE, COMPANYID, CONSUMERID) VALUES(%s,%s,%s,%s,%s,%s);"
+        cursor.execute(query, (billnum, invoicedate, deadline, charge, companyId, consumerId))
         cursor.close()
 
 def getMyBills(consumerId):
@@ -306,13 +307,26 @@ def getAllServiceTypes():
             servicetype.append(dc)
         return servicetype
 
-def saveCompany(username, name, taxnumber, email, password, serviceTypeId, cityId):
+
+def saveCompany(username, name, taxnumber, email, password, serviceTypeId, cityId, encoded):
     with dbapi2.connect(url) as connection:
         cursor = connection.cursor()
-        query = """INSERT INTO COMPANY (USERNAME, NAME, TAXNUMBER, EMAIL, PASSWORD, SERVICETYPEID, CITYID) VALUES(%s,%s,%s,%s,%s,%s,%s); """
-        cursor.execute(query, (username, name,taxnumber,email,password, serviceTypeId, cityId) )
+        query = """INSERT INTO COMPANY (USERNAME, NAME, TAXNUMBER, EMAIL, PASSWORD, SERVICETYPEID, CITYID, LOGO) VALUES(%s,%s,%s,%s,%s,%s,%s,%s); """
+        cursor.execute(query, (username, name,taxnumber,email,password, serviceTypeId, cityId, encoded) )
         connection.commit()
         cursor.close()
+
+def getlogo(companyId):
+    with dbapi2.connect(url) as connection:
+        cursor = connection.cursor()
+        query = """SELECT encode(logo::bytea, 'escape') FROM company as o where o.logo != '' AND o.id = %s """
+        cursor.execute(query, (companyId, ) )
+        logodata = cursor.fetchone()
+        connection.commit()
+        cursor.close()
+        return logodata[0]
+
+    
 
 def saveConsumer(username, name, surname, identitynum, email, password, cityId, address):
     with dbapi2.connect(url) as connection:

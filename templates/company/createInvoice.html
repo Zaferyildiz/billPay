@@ -7,31 +7,22 @@
 {% block content %}
 {% from "includes/_formhelpers.html" import render_field %}
             
-    <table class="table table-striped">
-        <thead>
-          <tr>
-            <th scope="col">No</th>
-            <th scope="col">Name</th>
-            <th scope="col">Surname</th>
-            <th scope="col">Charge</th>
-            <th scope="col">Make Out</th>
-          </tr>
-        </thead>
-        <tbody>            
-              <tr>       
-                <th scope="row">1</th>
-                <td>{{consumer['name']}}</td>
-                <td>{{consumer['surname']}}</td>
-                <td>{{charge}}</td>
-                <td>
-                  <form method="post" action="{{ url_for('createInvoice', consumerId=consumer['id']) }}">
-                    <button type="submit" class="btn btn-primary" title="Make Out Invoice">Make Out</button>
-                  </form>
-                </td>
 
-              </tr>
-             
-        </tbody>
-      </table>
-      <br>
+<form method="post" action="{{ url_for('createInvoice', consumerId=consumer['id']) }}">
+  <dl>
+    {{ render_field(form.name, disabled= 'disabled', class="form-control") }}
+    {{ render_field(form.surname, disabled= 'disabled', class="form-control") }}
+    {{ render_field(form.billnum, disabled= 'disabled', class="form-control") }}
+    {{  form.billnumhidden }}
+    {{ render_field(form.invoiceDate, disabled= 'disabled', class="form-control") }}
+    {{ render_field(form.deadline, class="form-control") }}
+    {{ render_field(form.charge, class="form-control") }}
+  </dl>
+  <br>
+
+  <button type="submit" class="btn btn-primary" style="float: right;">Create Invoice</button>
+</form>
+
+
+
 {% endblock content %}

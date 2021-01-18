@@ -13,6 +13,14 @@
 
 {% from "includes/_formhelpers.html" import render_field %}
 
+<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==" alt="Red dot">
+
+<img id="ItemPreview" src="data:image/png;base64,{{logo}}">
+
+
+<br><br>
+
+
 <form method="post">
   <dl>
     {{ render_field(form.username, disabled= 'disabled', class="form-control") }}
@@ -38,5 +46,8 @@
     {
         $( ".form-control" ).prop( "disabled", false );
     });
+
+    
+
 </script>
 {% endblock script %}
