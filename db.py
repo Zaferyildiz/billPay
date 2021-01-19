@@ -266,16 +266,18 @@ def deleteBill(billId):
 
 def updateBankAccount(companyId, charge):
     bankaccount = getBankAccount(companyId, "company")
-    newbalance = bankaccount['balance']
-    newbalance += charge
-    company = getCompany(companyId)
-    with dbapi2.connect(url) as connection:
-        cursor = connection.cursor()
-        query = """UPDATE BANKACCOUNT
-                SET BALANCE = %s
-                WHERE BANKACCOUNT.ID = %s;"""
-        cursor.execute(query, (newbalance, company['bankaccountid'] ))
-        cursor.close()
+    newbalance = 0
+    if not bankaccount:
+        newbalance = bankaccount['balance']
+        newbalance += charge
+        company = getCompany(companyId)
+        with dbapi2.connect(url) as connection:
+            cursor = connection.cursor()
+            query = """UPDATE BANKACCOUNT
+                    SET BALANCE = %s
+                    WHERE BANKACCOUNT.ID = %s;"""
+            cursor.execute(query, (newbalance, company['bankaccountid'] ))
+            cursor.close()
 
 def deleteBankAccountfromdb(bankAccountId):
     with dbapi2.connect(url) as connection:
@@ -435,6 +437,14 @@ def getNumberofCompany():
         return num[0]
 
 def getNumberofCity():
+    with dbapi2.connect(url) as connection:
+        cursor = connection.cursor()
+        cursor.execute("""SELECT COUNT(*) FROM CITY""")
+        num = cursor.fetchone()
+        cursor.close()
+        return num[0]
+
+def getNumberOfMyBills():
     with dbapi2.connect(url) as connection:
         cursor = connection.cursor()
         cursor.execute("""SELECT COUNT(*) FROM CITY""")

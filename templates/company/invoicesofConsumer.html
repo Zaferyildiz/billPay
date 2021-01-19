@@ -1,7 +1,6 @@
 {% extends 'layout.html' %}
 
 {% block pageTitle %}
-    
     Invoices of  {{consumer['name']}} {{consumer['surname']}}
 {% endblock pageTitle %}
 
@@ -9,7 +8,7 @@
 {% from "includes/_formhelpers.html" import render_field %}
 
     {% if (invoices |length) == 0 %}
-        <h1>This consumer has no bill currently!</h1>
+        <h3>This consumer has no bill currently!</h3>
     {% else %}
 
     <input class="form-control mr-sm-2 col-2" style="float: right;" type="text" id="searchInput" placeholder="Search">

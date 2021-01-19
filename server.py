@@ -22,6 +22,12 @@ def index():
     nofcompany = getNumberofCompany()
     nofconsumer = getNumberofConsumer()
     nofcity = getNumberofCity()
+    nofoutageofcompany = None
+    nofoutageofconsumer = None
+    bankaccount = None
+    nofbillsofconsumers = None
+    nofconsumersofcompany = None
+
     return render_template("index.html", numberofConsumer=nofconsumer, numberofCompany=nofcompany, numberofCity=nofcity)
 
 @app.route("/login", methods = ["GET", "POST"])

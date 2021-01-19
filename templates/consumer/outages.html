@@ -8,7 +8,11 @@
 {% from "includes/_formhelpers.html" import render_field %}
 
   {% if outages |length == 0 %}
-      <h3>There is no outage notification in your city</h3>
+
+      <div class="card bg-light text-dark">
+        <div class="card-body">There is no outage notification in your city</div>
+      </div>
+      
   {% else %}
       <table class="table table-striped">
         <thead>
