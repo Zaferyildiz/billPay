@@ -38,7 +38,7 @@ def login():
                 session['loggedin'] = True
                 session['id'] = company['id']
                 session['username'] = company['username']
-                session['cityid'] = company['cityid']
+                session['name'] = company['name']
                 session['role'] = "company"
                 return redirect(url_for("index"))
             else:
@@ -49,8 +49,9 @@ def login():
             if hasher.verify(passwordInput, consumer['password']):
                 flash("Your login is successfull", "success")
                 session['loggedin'] = True
-                session['user'] = consumer
                 session['id'] = consumer['id']
+                session['name'] = consumer['name']
+                session['surname'] = consumer['surname']
                 session['role'] = "consumer"
                 return redirect(url_for("index"))
             else:
@@ -79,10 +80,7 @@ def companyRegister():
         serviceTypeId = form.servicetype.data
         cityId = form.city.data
         logo = request.files['file']
-        print("filename")
-        print(logo)
         encoded = base64.b64encode(logo.read())
-        print(encoded)
         saveCompany(username, name, taxnumber, email, password, serviceTypeId, cityId, encoded)  
         flash("You have succesfully registered!", "success")
         return redirect(url_for("companyRegister"))
@@ -135,7 +133,7 @@ def consumerRegister():
         password = hasher.hash(form.password.data)
         cityId = form.city.data
         address = form.address.data
-        saveConsumer(username, name, surname, identitynum, email, password, cityId, address, logo)    
+        saveConsumer(username, name, surname, identitynum, email, password, cityId, address)    
         return redirect("/")     
     else:
         city = getAllCities()
@@ -241,7 +239,6 @@ def viewInvoicesofConsumer(consumerId):
 @app.route("/invoice/delete/<int:billId>/<int:consumerId>", methods=["POST"])
 @isCompany
 def deleteInvoice(billId, consumerId):
-    
     if request.method == "POST":
         deleteBill(billId)
         flash("Invoice is deleted","Success")
@@ -255,7 +252,7 @@ def deleteInvoice(billId, consumerId):
 def viewInvoice(billId):
     invoice = getInvoice(billId)
     form = InvoiceEdit(request.form)
-    if request.method == "POST" and form.validate():
+    if request.method == "POST" :
         invoiceDate = form.invoiceDate.data
         deadline = form.deadline.data
         charge = form.charge.data
@@ -273,8 +270,13 @@ def viewInvoice(billId):
 @app.route("/myBills/<string:billId>", methods=["GET","POST"])
 @isConsumer
 def myBills(billId):
-    if request.method == "POST" and form.validate():
-        deleteBill(billId)
+    if request.method == "POST":
+        bill = getInvoice(billId)
+        mybankaccount = getBankAccount(session['id'], "consumer")
+        if mybankaccount['balance'] >= bill['charge']:
+            deleteBill(billId)
+        else:
+            flash("Your balance is not enough for this operation", "danger")
         return redirect(url_for("myBills"))
     else:
         bills = getMyBills(session['id'])
@@ -315,28 +317,40 @@ def donationBills():
 @app.route("/bankAccount", methods=["GET", "POST"])
 def bankAccount():
     form = BankAccount(request.form)
+    moneyform = DrawMoney(request.form)
     if request.method == "POST":
         name = form.name.data
         iban = form.iban.data
         balance = form.balance.data
         bankAccountId = createBankAccount(name, iban, balance)
-        assignBankAccounttoConsumer(bankAccountId, session['id'])
+        if session['role'] == "company":
+            assignBankAccounttoCompany(bankAccountId, session['id'])
+        else:
+            assignBankAccounttoConsumer(bankAccountId, session['id'])
         return redirect(url_for("bankAccount"))
     else:
-        account = getBankAccount(session['id'])
+        account = getBankAccount(session['id'], session['role'])
         if not account:
-            return render_template("bankAccount.html", form=form)
+            return render_template("bankAccount.html", form=form, moneyform=moneyform, bankaccount=account)
         else:
             form.name.default = account['name']
             form.iban.default = account['iban']
             form.balance.default = account['balance']
             form.process()
-            return render_template("bankAccount.html", form=form)
+            return render_template("bankAccount.html", form=form,  moneyform=moneyform, bankaccount=account)
+
+@app.route("/drawmoney/<int:bankAccountId>", methods=["POST"])
+def drawMoney(bankAccountId):
+    form = DrawMoney(request.form)
+    money = form.money.data
+    bankAccountDrawMoney(bankAccountId, money)
+    return redirect(url_for("bankAccount"))
 
 @app.route("/outages")
 @isConsumer
 def outages():
-    cityId = session['cityid']
+    consumer = getConsumer(session['id'])
+    cityId = consumer['cityid']
     outages = getOutages(cityId)
     return render_template("consumer/outages.html", outages=outages)
 

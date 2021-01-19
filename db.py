@@ -75,11 +75,22 @@ def assignBankAccounttoConsumer(bankAccountId, consumerId):
         cursor.execute(query, (bankAccountId, consumerId))
         cursor.close()
 
-def getBankAccount(consumerId):
+def assignBankAccounttoCompany(bankAccountId, companyId):
     with dbapi2.connect(url) as connection:
-        consumer = getConsumer(consumerId)
-        bankAccountId = consumer['bankaccountid']
-        print(bankAccountId)
+        cursor = connection.cursor()
+        query = """UPDATE COMPANY SET BANKACCOUNTID = %s WHERE COMPANY.ID = %s"""
+        cursor.execute(query, (bankAccountId, companyId))
+        cursor.close()
+
+def getBankAccount(userId, role):
+    with dbapi2.connect(url) as connection:
+        bankAccountId = 0
+        if role == "company":
+            company = getCompany(userId)
+            bankAccountId = company['bankaccountid']
+        else:
+            consumer = getConsumer(userId)
+            bankAccountId = consumer['bankaccountid']
         if bankAccountId is None:
             nulldict = {}
             return nulldict
@@ -225,13 +236,51 @@ def billShare(billId):
         cursor.execute(query, (billId, ))
         cursor.close()
 
-        
 def deleteBill(billId):
+    deletedBill = getInvoice(billId)
+    updateBankAccount(deletedBill['companyid'], deletedBill['charge'])
     with dbapi2.connect(url) as connection:
         cursor = connection.cursor()
         query = "DELETE FROM public.bill WHERE id=%s;"
         cursor.execute(query, (billId, ))
         cursor.close()
+
+def updateBankAccount(companyId, charge):
+    bankaccount = getBankAccount(companyId, "company")
+    newbalance = bankaccount['balance']
+    newbalance += charge
+    company = getCompany(companyId)
+    with dbapi2.connect(url) as connection:
+        cursor = connection.cursor()
+        query = """UPDATE BANKACCOUNT
+                SET BALANCE = %s
+                WHERE BANKACCOUNT.ID = %s;"""
+        cursor.execute(query, (newbalance, company['bankaccountid'] ))
+        cursor.close()
+
+def bankAccountDrawMoney(bankAccountId, money):
+    bankAccount = getBankAccountwithId(bankAccountId)
+    newbalance = bankAccount['balance']
+    newbalance += money
+    with dbapi2.connect(url) as connection:
+        cursor = connection.cursor()
+        query = """UPDATE BANKACCOUNT
+                SET BALANCE = %s
+                WHERE BANKACCOUNT.ID = %s;"""
+        cursor.execute(query, (newbalance, bankAccountId ))
+        cursor.close()
+
+def getBankAccountwithId(bankAccountId):
+    with dbapi2.connect(url) as connection:
+        cursor = connection.cursor()
+        query = """SELECT * FROM BANKACCOUNT WHERE BANKACCOUNT.ID = %s"""
+        cursor.execute(query, (bankAccountId, ))
+        bankAccount = cursor.fetchone()
+        columns = list(cursor.description[i][0] for i in range(0, len(cursor.description)))
+        cursor.close()
+        data = dict(zip(columns, bankAccount))
+        return data
+            
         
 def getAllCities():
     with dbapi2.connect(url) as connection:

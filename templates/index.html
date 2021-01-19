@@ -3,55 +3,141 @@
 
 {% block content%}
 
-<div class="container">
-    <div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
-        <h1 class="title">BILLPAY</h1>
-        <p class="lead">You can pay all of your bills with just a few clicks!</p>
-      </div>
-    
-      <div class="row row-cols-1 row-cols-md-3 mb-3 text-center">
-        <div class="col">
-          <div class="card mb-4 shadow-sm">
-          <div class="card-header">
-            <h4 class="my-0 fw-normal">Company</h4>
-          </div>
-          <div class="card-body">
-            <h1 class="card-title pricing-card-title"> {{numberofCompany}} </h1>
-            
-          </div>
-        </div>
-        </div>
-        <div class="col">
-          <div class="card mb-4 shadow-sm">
-          <div class="card-header">
-            <h4 class="my-0 fw-normal">Consumer</h4>
-          </div>
-          <div class="card-body">
-            <h1 class="card-title pricing-card-title">{{numberofConsumer}} </h1>
-            
+{% if session['loggedin'] and session['role'] == "consumer" %}
+
+      <h1>Dashboard</h1>
+      <br>
+      <br>
+
+      <div class="row">
+        <div class="col-sm-6">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Consumers</h5>
+              <p class="card-text">You have 5 bills</p>
+              <a href="/myBills" class="btn btn-primary d-flex justify-content-center">View your bills</a>
+            </div>
           </div>
         </div>
-        </div>
-        <div class="col">
-          <div class="card mb-4 shadow-sm">
-          <div class="card-header">
-            <h4 class="my-0 fw-normal">City</h4>
+        <div class="col-sm-6">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Outages</h5>
+              <p class="card-text">There is no power outages</p>
+              <a href="/outages" class="btn btn-primary d-flex justify-content-center">Display outage notifications</a>
+            </div>
           </div>
-          <div class="card-body">
-            <h1 class="card-title pricing-card-title"> {{numberofCity}} </h1>
-          </div>
-        </div>
         </div>
       </div>
 
       <br>
       <br>
 
-      <div class="d-flex justify-content-center">
-          <a href="/login"><button type="button" class="btn btn-outline-primary btn-lg"> Log In</button>  </a>
+      <div class="card text-center col-6" style="margin: auto;">
+        <div class="card-header">
+          <b>Your Balance</b>
+        </div>
+        <div class="card-body">
+          <h2 class="card-title">2835 TL</h2>
+          <br>
+          <a href="/bankAccount" class="btn btn-primary">Display your bank account</a>
+        </div>
+      </div>
+{% elif session['role'] == "company" %}
+
+    <h1>Dashboard</h1>
+    <br>
+    <br>
+
+    <div class="row">
+      <div class="col-sm-6">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Consumers</h5>
+            <p class="card-text">Your company has 5 consumers</p>
+            <a href="/consumers" class="btn btn-primary d-flex justify-content-center">View your consumers</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Outages</h5>
+            <p class="card-text">There is no power outages</p>
+            <a href="/createOutage" class="btn btn-primary d-flex justify-content-center">Create an outage notification</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <br>
+    <br>
+
+    <div class="card text-center col-6" style="margin: auto;">
+      <div class="card-header">
+        <b>Your Balance</b>
+      </div>
+      <div class="card-body">
+        <h2 class="card-title">2835 TL</h2>
+        <br>
+        <a href="/bankAccount" class="btn btn-primary">Display your bank account</a>
+      </div>
+    </div>
+{% else %}
+      <div class="container">
+        <div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+            <h1 class="title">BILLPAY</h1>
+            <p class="lead">You can pay all of your bills with just a few clicks!</p>
+          </div>
         
-      </div>
-      
-</div>       
+          <div class="row row-cols-1 row-cols-md-3 mb-3 text-center">
+            <div class="col">
+              <div class="card mb-4 shadow-sm">
+              <div class="card-header">
+                <h4 class="my-0 fw-normal">Company</h4>
+              </div>
+              <div class="card-body">
+                <h1 class="card-title pricing-card-title"> {{numberofCompany}} </h1>
+                
+              </div>
+            </div>
+            </div>
+            <div class="col">
+              <div class="card mb-4 shadow-sm">
+              <div class="card-header">
+                <h4 class="my-0 fw-normal">Consumer</h4>
+              </div>
+              <div class="card-body">
+                <h1 class="card-title pricing-card-title">{{numberofConsumer}} </h1>
+                
+              </div>
+            </div>
+            </div>
+            <div class="col">
+              <div class="card mb-4 shadow-sm">
+              <div class="card-header">
+                <h4 class="my-0 fw-normal">City</h4>
+              </div>
+              <div class="card-body">
+                <h1 class="card-title pricing-card-title"> {{numberofCity}} </h1>
+              </div>
+            </div>
+            </div>
+          </div>
+
+          <br>
+          <br>
+
+          <div class="d-flex justify-content-center">
+              <a href="/login"><button type="button" class="btn btn-outline-primary btn-lg"> Log In</button>  </a>
+          </div>
+      </div>   
+{% endif %}
+
+
+
+
+
+    
    
 {% endblock %}
