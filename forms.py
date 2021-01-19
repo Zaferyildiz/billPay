@@ -6,7 +6,7 @@ from flask import Flask, render_template, request, redirect, session, url_for
 from datetime import datetime
 import email_validator
 
-class CompanyRegister(FlaskForm):
+class CompanyRegister(Form):
     username = StringField("User Name", validators=[DataRequired(message="Please enter a user name")])
     name = StringField("Company Name", validators=[DataRequired(message="Please enter a company name")])
     taxnumber = StringField("Tax Number", validators=[DataRequired("Please enter a tax number"), Length(10,10,"Your tax number must contain 10 characters")])
@@ -20,7 +20,7 @@ class CompanyRegister(FlaskForm):
     check = BooleanField("I agree with terms and conditions", validators=[DataRequired("You must accept terms and conditions")])
     file = FileField("Logo of your company")
 
-class ConsumerRegister(FlaskForm):
+class ConsumerRegister(Form):
     username = StringField(label=("User Name"), validators=[DataRequired(message="Please enter a user name")])
     name = StringField(label=("Name"), validators=[DataRequired(message="Please enter a  name")])
     surname = StringField(label=("Surname"), validators=[DataRequired(message="Please enter a surname")])
@@ -35,11 +35,11 @@ class ConsumerRegister(FlaskForm):
     check = BooleanField("I agree with terms and conditions", validators=[DataRequired("You must accept terms and conditions")])
 
 
-class Login(FlaskForm):
+class Login(Form):
     username = StringField(label=("User Name"), validators=[validators.DataRequired(message="Please enter a user name")])
     password = PasswordField("Password", validators=[validators.DataRequired(message="Please enter a password")])
 
-class Invoice(FlaskForm):
+class Invoice(Form):
     name = StringField(label=("Name of the consumer"))
     surname = StringField(label=("Surname of the consumer"))
     billnum = StringField(label=("Invoice Number"))
@@ -48,20 +48,20 @@ class Invoice(FlaskForm):
     deadline = DateField(label="Deadline for payment")
     charge = FloatField(label=("Charge"))
 
-class InvoiceEdit(FlaskForm):
+class InvoiceEdit(Form):
     invoiceDate = DateField(label=("Invoice Date"))
     deadline = DateField(label=("Deadline"))
     charge = FloatField(label=("Charge"))
     lateFee = FloatField(label=("Late Fee"))
 
-class BankAccount(FlaskForm):
+class BankAccount(Form):
     name = StringField("Bank Account Name", validators=[validators.DataRequired(message="Please give a name to your bank account")])
     iban = StringField("IBAN", validators=[validators.DataRequired(message="Please enter your IBAN number"), validators.Length(26, 26, "Your IBAN must contaion 26 characters")])
     balance = FloatField("Balance", validators=[validators.DataRequired(message="Please enter balance of your bank account")])
 
-class DrawMoney(FlaskForm):
+class DrawMoney(Form):
     money = FloatField("Money", validators=[validators.DataRequired(message="Please enter a number")])
 
-class Outage(FlaskForm):
+class Outage(Form):
     startDate = DateField(label="Start Date")
     endDate = DateField(label="End Date")

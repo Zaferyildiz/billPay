@@ -27,14 +27,13 @@ def index():
 @app.route("/login", methods = ["GET", "POST"])
 def login(): 
     form = Login(request.form)
-    if request.method == "POST" and form.validate():
+    if request.method == "POST":
         username = form.username.data
         passwordInput = form.password.data
         res = isLogin(username, passwordInput)
         if res[0] == "company":
             company = res[1]
             if hasher.verify(passwordInput, company['password']):
-                flash("Your login is successfull", "success")
                 session['loggedin'] = True
                 session['id'] = company['id']
                 session['username'] = company['username']
@@ -47,7 +46,6 @@ def login():
         elif res[0] == "consumer":
             consumer = res[1]
             if hasher.verify(passwordInput, consumer['password']):
-                flash("Your login is successfull", "success")
                 session['loggedin'] = True
                 session['id'] = consumer['id']
                 session['name'] = consumer['name']
@@ -124,7 +122,7 @@ def companyProfile():
 @app.route("/consumer/register", methods = ["GET", "POST"])
 def consumerRegister():
     form = ConsumerRegister(request.form)
-    if request.method == "POST" and form.validate():
+    if request.method == "POST":
         username = form.username.data
         name = form.name.data
         surname = form.surname.data
@@ -298,7 +296,7 @@ def shareBill(billId):
 @isCompany
 def createOutage():
     form = Outage(request.form)
-    if request.method == "POST" and form.validate():
+    if request.method == "POST":
         startDate = form.startDate.data
         endDate = form.endDate.data
         companyId = session['id']
