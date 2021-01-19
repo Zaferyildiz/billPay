@@ -58,8 +58,8 @@ def editInvoice(billId, invoiceDate, deadline, charge):
         cursor.execute(query, (invoiceDate, deadline, charge, billId ))
         cursor.close()
         
-
 def createBankAccount(name, iban, balance):
+
     with dbapi2.connect(url) as connection:
         cursor = connection.cursor()
         query = """INSERT INTO BANKACCOUNT (NAME, IBAN, BALANCE) VALUES(%s,%s,%s) RETURNING ID;"""
@@ -105,10 +105,12 @@ def getBankAccount(userId, role):
             return data
 
 def addOutage(startDate, endDate, companyId):
+    company = getCompany(companyId)
+    cityId = company['cityid']
     with dbapi2.connect(url) as connection:
         cursor = connection.cursor()
-        query = """INSERT INTO OUTAGE (STARTDATE, ENDDATE, COMPANYID) VALUES(%s,%s,%s);"""
-        cursor.execute(query, (startDate, endDate, companyId))
+        query = """INSERT INTO OUTAGE (STARTDATE, ENDDATE, COMPANYID, CITYID) VALUES(%s,%s,%s,%s);"""
+        cursor.execute(query, (startDate, endDate, companyId, cityId))
         cursor.close()
 
 def getOutages(cityId):
@@ -150,45 +152,61 @@ def getInvoiceofConsumer(consumerId):
         return data
 
 def updateConsumer(consumerId, username, name, surname, idnumber, email, cityId, address):
-    with dbapi2.connect(url) as connection:
-        cursor = connection.cursor()
-        query = """
-            UPDATE CONSUMER
-            SET USERNAME = %s,
-            NAME = %s,
-            SURNAME = %s,
-            IDENTITYNUM = %s,
-            EMAIL = %s,
-            CITYID = %s,
-            ADDRESS = %s
-            WHERE CONSUMER.ID = %s;
-        """
-        cursor.execute(query, (username, name, surname, idnumber, email, cityId, address, consumerId))
-        connection.commit()
-        cursor.close()
+    try:
+        with dbapi2.connect(url) as connection:
+            cursor = connection.cursor()
+            query = """
+                UPDATE CONSUMER
+                SET USERNAME = %s,
+                NAME = %s,
+                SURNAME = %s,
+                IDENTITYNUM = %s,
+                EMAIL = %s,
+                CITYID = %s,
+                ADDRESS = %s
+                WHERE CONSUMER.ID = %s;
+            """
+            cursor.execute(query, (username, name, surname, idnumber, email, cityId, address, consumerId))
+            connection.commit()
+            cursor.close()
+    except dbapi2.IntegrityError as e:
+        return(e.diag.message_detail)
 
-def updateCompany(companyId, username, name, taxnumber, email, serviceTypeId, cityId):
-    with dbapi2.connect(url) as connection:
-        cursor = connection.cursor()
-        query = """
-            UPDATE COMPANY
-            SET USERNAME = %s,
-            NAME = %s,
-            TAXNUMBER = %s,
-            EMAIL = %s,
-            CITYID = %s,
-            SERVICETYPEID = %s
-            WHERE COMPANY.ID = %s;
-        """
-        cursor.execute(query, (username, name, taxnumber, email, cityId, serviceTypeId, companyId ))
-        cursor.close()
+    
+def updateCompany(companyId, username, name, taxnumber, email, serviceTypeId, cityId, logo):
+    company = getCompany(companyId)
+    logoofCompany = company['logo']
+    try:
+        with dbapi2.connect(url) as connection:
+            cursor = connection.cursor()
+            query = """
+                UPDATE COMPANY
+                SET USERNAME = %s,
+                NAME = %s,
+                TAXNUMBER = %s,
+                EMAIL = %s,
+                CITYID = %s,
+                SERVICETYPEID = %s,
+                LOGO = %s
+                WHERE COMPANY.ID = %s;
+            """
+            print(logo)
+            if logoofCompany is not None and logo == b'':
+                logo = logoofCompany
+            cursor.execute(query, (username, name, taxnumber, email, cityId, serviceTypeId, logo, companyId ))
+            cursor.close()
+    except dbapi2.IntegrityError as e:
+        return(e.diag.message_detail)
 
 def makeInvoice(billnum, invoicedate, deadline, charge, companyId, consumerId):
-    with dbapi2.connect(url) as connection:
-        cursor = connection.cursor()
-        query = "INSERT INTO BILL (BILLNUM, INVOICEDATE, DEADLINE, CHARGE, COMPANYID, CONSUMERID) VALUES(%s,%s,%s,%s,%s,%s);"
-        cursor.execute(query, (billnum, invoicedate, deadline, charge, companyId, consumerId))
-        cursor.close()
+    try:
+        with dbapi2.connect(url) as connection:
+            cursor = connection.cursor()
+            query = "INSERT INTO BILL (BILLNUM, INVOICEDATE, DEADLINE, CHARGE, COMPANYID, CONSUMERID) VALUES(%s,%s,%s,%s,%s,%s);"
+            cursor.execute(query, (billnum, invoicedate, deadline, charge, companyId, consumerId))
+            cursor.close()
+    except dbapi2.IntegrityError as e:
+        return(e.diag.message_detail)
 
 def getMyBills(consumerId):
     with dbapi2.connect(url) as connection:
@@ -358,12 +376,16 @@ def getAllServiceTypes():
 
 
 def saveCompany(username, name, taxnumber, email, password, serviceTypeId, cityId, encoded):
-    with dbapi2.connect(url) as connection:
-        cursor = connection.cursor()
-        query = """INSERT INTO COMPANY (USERNAME, NAME, TAXNUMBER, EMAIL, PASSWORD, SERVICETYPEID, CITYID, LOGO) VALUES(%s,%s,%s,%s,%s,%s,%s,%s); """
-        cursor.execute(query, (username, name,taxnumber,email,password, serviceTypeId, cityId, encoded) )
-        connection.commit()
-        cursor.close()
+    try:
+        with dbapi2.connect(url) as connection:
+            cursor = connection.cursor()
+            query = """INSERT INTO COMPANY (USERNAME, NAME, TAXNUMBER, EMAIL, PASSWORD, SERVICETYPEID, CITYID, LOGO) VALUES(%s,%s,%s,%s,%s,%s,%s,%s); """
+            cursor.execute(query, (username, name,taxnumber,email,password, serviceTypeId, cityId, encoded) )
+            connection.commit()
+            cursor.close()
+    except dbapi2.IntegrityError as e:
+        return(e.diag.message_detail)
+
 
 def getlogo(companyId):
     with dbapi2.connect(url) as connection:
@@ -373,17 +395,20 @@ def getlogo(companyId):
         logodata = cursor.fetchone()
         connection.commit()
         cursor.close()
-        return logodata[0]
-
+        if logodata is not None:
+            return logodata[0]
     
 
 def saveConsumer(username, name, surname, identitynum, email, password, cityId, address):
-    with dbapi2.connect(url) as connection:
-        cursor = connection.cursor()
-        query = """INSERT INTO CONSUMER (USERNAME, NAME, SURNAME, IDENTITYNUM, EMAIL, PASSWORD, CITYID, ADDRESS) VALUES(%s,%s,%s,%s,%s,%s,%s,%s); """
-        cursor.execute(query, (username, name, surname, identitynum, email, password, cityId, address) )
-        connection.commit()
-        cursor.close()
+    try:
+        with dbapi2.connect(url) as connection:
+            cursor = connection.cursor()
+            query = """INSERT INTO CONSUMER (USERNAME, NAME, SURNAME, IDENTITYNUM, EMAIL, PASSWORD, CITYID, ADDRESS) VALUES(%s,%s,%s,%s,%s,%s,%s,%s); """
+            cursor.execute(query, (username, name, surname, identitynum, email, password, cityId, address) )
+            connection.commit()
+            cursor.close()
+    except dbapi2.IntegrityError as e:
+        return(e.diag.message_detail)
 
 def getNumberofConsumer():
     with dbapi2.connect(url) as connection:

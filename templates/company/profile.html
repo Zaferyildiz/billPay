@@ -2,10 +2,10 @@
 {% block title %}My Profile{% endblock %}
 
 {% block pageTitle %}
-
     <form method="POST" action="{{ url_for('companyDelete') }}">
       <button style="float: right;" type="submit" id="deleteButton" class="btn btn-danger">Delete My Account</button>
     </form>
+    <button type="button" style="float: right; position: relative; right: 10px;" id="editButton" class="btn btn-primary">Edit My Profile</button>
     My Profile
 {% endblock pageTitle %}
 
@@ -13,12 +13,20 @@
 
 {% from "includes/_formhelpers.html" import render_field %}
 
-<img id="ItemPreview" width="450px" height="300px" src="data:image/png;base64,{{logo}}">
- 
-<br><br>
+{% if not logo %}
+    <img id="companyLogo" width="250px" height="200px" src="https://kodilan.com/img/empty-company-logo.8437254b.png">
+{% else %}
+    <img id="companyLogo" width="250px" height="200px" src="data:image/png;base64,{{logo}}">
+{% endif %}
 
-<form method="post">
+  <br>
+  <br>
+      
+
+<form method="post" enctype="multipart/form-data">
   <dl>
+    {{ form.csrf_token}}
+    {{ render_field(form.file, disabled= 'disabled', class="form-control-file") }}
     {{ render_field(form.username, disabled= 'disabled', class="form-control") }}
     {{ render_field(form.name, disabled= 'disabled', class="form-control") }}
     {{ render_field(form.taxnumber, disabled= 'disabled', class="form-control") }}
@@ -26,9 +34,8 @@
     {{ render_field(form.city, disabled= 'disabled', class="form-control") }}
     {{ render_field(form.servicetype, disabled= 'disabled') }}
   </dl>
-  <button type="button" id="editButton" class="btn btn-primary">Edit My Profile</button>
-  <button type="submit" class="btn btn-primary" style="position: relative; left: 15px;" >Save Changes</button>
   
+  <button type="submit" class="btn btn-primary" style="position: relative; left: 15px;" >Save Changes</button>
   <br>
 </form>
 <br>
@@ -38,11 +45,12 @@
 {% block script %}
 
 <script type="text/javascript">
+    
     $("#editButton").click(function()
     {
         $( ".form-control" ).prop( "disabled", false );
+        $( ".form-control-file" ).prop( "disabled", false );
     });
 
-  
 </script>
 {% endblock script %}

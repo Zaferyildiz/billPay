@@ -10,6 +10,7 @@
 
 <form method="post" action="{{ url_for('createInvoice', consumerId=consumer['id']) }}">
   <dl>
+    {{ form.csrf_token}}
     {{ render_field(form.name, disabled= 'disabled', class="form-control") }}
     {{ render_field(form.surname, disabled= 'disabled', class="form-control") }}
     {{ render_field(form.billnum, disabled= 'disabled', class="form-control") }}

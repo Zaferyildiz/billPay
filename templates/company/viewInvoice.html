@@ -10,6 +10,7 @@
 {% from "includes/_formhelpers.html" import render_field %}
 <form method="post">
   <dl>
+    {{ form.csrf_token}}
     {{ render_field(form.invoiceDate, disabled= 'disabled', class="form-control col-3") }}
     {{ render_field(form.deadline, disabled= 'disabled', class="form-control col-3") }}
     {{ render_field(form.charge, disabled= 'disabled', class="form-control col-3") }}

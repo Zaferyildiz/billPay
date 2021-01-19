@@ -7,7 +7,10 @@
 {% block content %}
 {% from "includes/_formhelpers.html" import render_field %}
 
-    <table class="table table-striped">
+  {% if outages |length == 0 %}
+      <h3>There is no outage notification in your city</h3>
+  {% else %}
+      <table class="table table-striped">
         <thead>
           <tr>
             <th scope="col">No</th>
@@ -28,8 +31,11 @@
                 <td>{{outages[index]['enddate']| strftime}} </td>
               </tr>
               {% endfor %}
-             
+            
         </tbody>
       </table>
       <br>
+  {% endif %}
+
+    
 {% endblock content %}

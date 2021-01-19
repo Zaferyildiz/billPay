@@ -14,6 +14,7 @@
 {% from "includes/_formhelpers.html" import render_field %}
 <form method="post">
   <dl>
+    {{ form.csrf_token}}
     {{ render_field(form.username, disabled= 'disabled', class="form-control") }}
     {{ render_field(form.name, disabled= 'disabled', class="form-control") }}
     {{ render_field(form.surname, disabled= 'disabled', class="form-control") }}
