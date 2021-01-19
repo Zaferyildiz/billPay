@@ -2,6 +2,12 @@
 {% block title %}Bank Accounts{% endblock %}
 
 {% block pageTitle %}
+    {% if bankaccount %}
+        <form method="POST" action="{{ url_for('deleteBankAccount', bankaccountid=bankaccount['id'] ) }}">
+            <button style="float: right;" type="submit" id="deleteButton" class="btn btn-danger">Delete My Bank Account</button>
+        </form>
+    {% endif %}
+    
     My Bank Account
 {% endblock pageTitle %}
 

@@ -46,20 +46,20 @@ def getInvoice(billId):
         data = dict(zip(columns, bill))
         return data
 
-def editInvoice(billId, invoiceDate, deadline, charge):
+def editInvoice(billId, invoiceDate, deadline, charge, taxrate):
     with dbapi2.connect(url) as connection:
         cursor = connection.cursor()
         query = """
             UPDATE BILL
             SET INVOICEDATE = %s,
             DEADLINE = %s,
-            CHARGE = %s
+            CHARGE = %s,
+            TAXRATE = %s
             WHERE BILL.ID = %s;"""
-        cursor.execute(query, (invoiceDate, deadline, charge, billId ))
+        cursor.execute(query, (invoiceDate, deadline, charge, taxrate, billId ))
         cursor.close()
         
 def createBankAccount(name, iban, balance):
-
     with dbapi2.connect(url) as connection:
         cursor = connection.cursor()
         query = """INSERT INTO BANKACCOUNT (NAME, IBAN, BALANCE) VALUES(%s,%s,%s) RETURNING ID;"""
@@ -85,6 +85,7 @@ def assignBankAccounttoCompany(bankAccountId, companyId):
 def getBankAccount(userId, role):
     with dbapi2.connect(url) as connection:
         bankAccountId = 0
+    
         if role == "company":
             company = getCompany(userId)
             bankAccountId = company['bankaccountid']
@@ -132,7 +133,7 @@ def getOutages(cityId):
             outages.append(dict(zip(columns, row)))
         return outages
 
-def getInvoiceofConsumer(consumerId):
+def getInvoiceofConsumer(consumerId, companyId):
     with dbapi2.connect(url) as connection:
         cursor = connection.cursor()
         query = """
@@ -140,9 +141,9 @@ def getInvoiceofConsumer(consumerId):
         INNER JOIN CONSUMER ON BILL.CONSUMERID = CONSUMER.ID 
         INNER JOIN COMPANY ON BILL.COMPANYID = COMPANY.ID
         INNER JOIN SERVICETYPE ON COMPANY.SERVICETYPEID = SERVICETYPE.ID 
-        WHERE BILL.CONSUMERID = %s
+        WHERE BILL.CONSUMERID = %s AND BILL.COMPANYID = %s
         """
-        cursor.execute(query, (consumerId, ))
+        cursor.execute(query, (consumerId, companyId))
         bills = cursor.fetchall()
         columns = [column[0] for column in cursor.description]
         cursor.close()
@@ -190,7 +191,7 @@ def updateCompany(companyId, username, name, taxnumber, email, serviceTypeId, ci
                 LOGO = %s
                 WHERE COMPANY.ID = %s;
             """
-            print(logo)
+            
             if logoofCompany is not None and logo == b'':
                 logo = logoofCompany
             cursor.execute(query, (username, name, taxnumber, email, cityId, serviceTypeId, logo, companyId ))
@@ -198,12 +199,12 @@ def updateCompany(companyId, username, name, taxnumber, email, serviceTypeId, ci
     except dbapi2.IntegrityError as e:
         return(e.diag.message_detail)
 
-def makeInvoice(billnum, invoicedate, deadline, charge, companyId, consumerId):
+def makeInvoice(billnum, invoicedate, deadline, charge, companyId, consumerId, taxrate):
     try:
         with dbapi2.connect(url) as connection:
             cursor = connection.cursor()
-            query = "INSERT INTO BILL (BILLNUM, INVOICEDATE, DEADLINE, CHARGE, COMPANYID, CONSUMERID) VALUES(%s,%s,%s,%s,%s,%s);"
-            cursor.execute(query, (billnum, invoicedate, deadline, charge, companyId, consumerId))
+            query = "INSERT INTO BILL (BILLNUM, INVOICEDATE, DEADLINE, CHARGE, TAXRATE, COMPANYID, CONSUMERID) VALUES(%s,%s,%s,%s,%s,%s,%s);"
+            cursor.execute(query, (billnum, invoicedate, deadline, charge, taxrate, companyId, consumerId))
             cursor.close()
     except dbapi2.IntegrityError as e:
         return(e.diag.message_detail)
@@ -274,6 +275,13 @@ def updateBankAccount(companyId, charge):
                 SET BALANCE = %s
                 WHERE BANKACCOUNT.ID = %s;"""
         cursor.execute(query, (newbalance, company['bankaccountid'] ))
+        cursor.close()
+
+def deleteBankAccountfromdb(bankAccountId):
+    with dbapi2.connect(url) as connection:
+        cursor = connection.cursor()
+        query = "DELETE FROM BANKACCOUNT WHERE id=%s;"
+        cursor.execute(query, (bankAccountId, ))
         cursor.close()
 
 def bankAccountDrawMoney(bankAccountId, money):
@@ -349,21 +357,21 @@ def getCompany(companyId):
 def deleteConsumer(consumerId):
     with dbapi2.connect(url) as connection:
         cursor = connection.cursor()
-        query = "DELETE FROM public.consumer WHERE id=%s;"
+        query = "DELETE FROM CONSUMER WHERE id=%s;"
         cursor.execute(query, (consumerId, ))
         cursor.close()
 
 def deleteCompany(companyId):
     with dbapi2.connect(url) as connection:
         cursor = connection.cursor()
-        query = "DELETE FROM public.company WHERE id=%s;"
+        query = "DELETE FROM COMPANY WHERE id=%s;"
         cursor.execute(query, (companyId, ))
         cursor.close()
 
 def getAllServiceTypes():
     with dbapi2.connect(url) as connection:
         cursor = connection.cursor()
-        cursor.execute("SELECT * FROM public.servicetype")
+        cursor.execute("SELECT * FROM SERVICETYPE")
         types = cursor.fetchall()
         servicetype = []
         cursor.close()

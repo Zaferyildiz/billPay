@@ -14,10 +14,11 @@
     {{ render_field(form.name, disabled= 'disabled', class="form-control") }}
     {{ render_field(form.surname, disabled= 'disabled', class="form-control") }}
     {{ render_field(form.billnum, disabled= 'disabled', class="form-control") }}
-    {{  form.billnumhidden }}
-    {{ render_field(form.invoiceDate, disabled= 'disabled', class="form-control") }}
+    {{ form.billnumhidden }}
+    {{ render_field(form.invoiceDate, class="form-control") }}
     {{ render_field(form.deadline, class="form-control") }}
     {{ render_field(form.charge, class="form-control") }}
+    {{ render_field(form.taxrate, class="form-control") }}
   </dl>
   <br>
 

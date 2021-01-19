@@ -82,6 +82,7 @@ def companyRegister():
         err = saveCompany(username, name, taxnumber, email, password, serviceTypeId, cityId, encoded)  
         if err is not None:
             flash(err, "danger")
+            return redirect(url_for("companyRegister"))
         else:
             flash("You have succesfully registered!", "success")
         return redirect(url_for("index"))
@@ -141,6 +142,7 @@ def consumerRegister():
         err = saveConsumer(username, name, surname, identitynum, email, password, cityId, address)    
         if err is not None:
             flash(err, "danger")
+            return redirect(url_for("consumerRegister"))
         else:
             flash("You have successfuly registered", "success")
         return redirect(url_for("index"))     
@@ -193,8 +195,8 @@ def consumerDelete():
 @isCompany
 def companyDelete():
     companyId = session['id']
-    deleteCompany(companyId)
     session.clear()
+    deleteCompany(companyId)
     return redirect(url_for("index"))
 
 @app.route("/consumers")
@@ -206,6 +208,10 @@ def viewConsumers():
 @app.route("/createInvoice/<int:consumerId>", methods=["GET", "POST"])
 @isCompany
 def createInvoice(consumerId):
+    bankAccountofCompany =  getBankAccount(session['id'], "company")
+    if not bankAccountofCompany:
+        flash("Firstly, you should create a bank account to get payments from your consumers", "danger")
+        return redirect(url_for("bankAccount"))
     consumer = getConsumer(consumerId)
     form = Invoice(request.form)
     charge = "{:.2f}".format(random.random() * 100 + 40)
@@ -215,8 +221,9 @@ def createInvoice(consumerId):
         invoicedate = datetime.today()
         deadline = form.deadline.data
         charge = form.charge.data 
+        taxrate = form.taxrate.data
         companyId = session['id']
-        err = makeInvoice(billnum, invoicedate, deadline, charge, companyId, consumerId) 
+        err = makeInvoice(billnum, invoicedate, deadline, charge, companyId, consumerId, taxrate) 
         if err is not None:
             flash(err, "danger")
         else:
@@ -233,13 +240,14 @@ def createInvoice(consumerId):
         form.charge.default = charge
         form.invoiceDate.default = dateoftoday
         form.deadline.default = deadline
+        form.taxrate.default = 18.0
         form.process()
         return render_template("company/createInvoice.html", form=form, consumer=consumer, charge=charge)
 
 @app.route("/invoicesOfConsumer/<int:consumerId>", methods=["GET", "POST"])
 @isCompany
 def viewInvoicesofConsumer(consumerId):
-    invoices = getInvoiceofConsumer(consumerId)
+    invoices = getInvoiceofConsumer(consumerId, session['id'])
     consumer = getConsumer(consumerId)
     if request.method == "POST" and form.validate_on_submit():
         editInvoice(date, deadline, company['id'], company['servicetypeid'], consumerId, charge) 
@@ -251,7 +259,7 @@ def viewInvoicesofConsumer(consumerId):
 @app.route("/invoice/delete/<int:billId>/<int:consumerId>", methods=["POST"])
 @isCompany
 def deleteInvoice(billId, consumerId):
-    if request.method == "POST" and form.validate_on_submit():
+    if request.method == "POST":
         deleteBill(billId)
         flash("Invoice is deleted","Success")
         return redirect(url_for("viewInvoicesofConsumer", consumerId=consumerId))   
@@ -262,18 +270,20 @@ def deleteInvoice(billId, consumerId):
 @app.route("/invoice/<int:billId>", methods=["GET", "POST"])
 @isCompany
 def viewInvoice(billId):
-    invoice = getInvoice(billId)
     form = InvoiceEdit(request.form)
-    if request.method == "POST" and form.validate_on_submit() :
+    if request.method == "POST" and form.validate_on_submit():
         invoiceDate = form.invoiceDate.data
         deadline = form.deadline.data
         charge = form.charge.data
-        editInvoice(billId, invoiceDate, deadline, charge) 
-        return redirect(url_for("viewInvoice", billId=billId))   
+        taxrate = form.taxrate.data
+        editInvoice(billId, invoiceDate, deadline, charge, taxrate) 
+        return redirect(url_for("viewInvoice", billId=billId))
     else:
+        invoice = getInvoice(billId)
         form.invoiceDate.default = invoice['invoicedate']
         form.charge.default = invoice['charge']
         form.deadline.default = invoice['deadline']
+        form.taxrate.default = invoice['taxrate']
         form.process()
         return render_template("company/viewInvoice.html", invoice=invoice, form=form)
 
@@ -330,7 +340,7 @@ def donationBills():
 def bankAccount():
     form = BankAccount(request.form)
     moneyform = DrawMoney(request.form)
-    if request.method == "POST" and form.validate_on_submit():
+    if request.method == "POST":
         name = form.name.data
         iban = form.iban.data
         balance = form.balance.data
@@ -350,6 +360,11 @@ def bankAccount():
             form.balance.default = account['balance']
             form.process()
             return render_template("bankAccount.html", form=form,  moneyform=moneyform, bankaccount=account)
+
+@app.route("/deleteBankAccount/<int:bankaccountid>", methods=["POST"])
+def deleteBankAccount(bankaccountid):
+    deleteBankAccountfromdb(bankaccountid)
+    return redirect(url_for("bankAccount"))
 
 @app.route("/drawmoney/<int:bankAccountId>", methods=["POST"])
 def drawMoney(bankAccountId):
