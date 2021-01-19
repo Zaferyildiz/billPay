@@ -292,11 +292,11 @@ def viewInvoice(billId):
 @app.route("/myBills/<string:billId>", methods=["GET","POST"])
 @isConsumer
 def myBills(billId):
-    if request.method == "POST" and form.validate_on_submit():
+    if request.method == "POST":
         bill = getInvoice(billId)
         mybankaccount = getBankAccount(session['id'], "consumer")
         if not mybankaccount:
-            flash("Firsly, you should add your bank account", "danger")
+            flash("Firstly, you should add your bank account", "danger")
             return redirect(url_for("bankAccount"))
         if mybankaccount['balance'] >= bill['charge']:
             deleteBill(billId)
