@@ -349,7 +349,7 @@ def donationBills():
 def bankAccount():
     form = BankAccount(request.form)
     moneyform = DrawMoney(request.form)
-    if request.method == "POST":
+    if request.method == "POST" and form.validate_on_submit():
         name = form.name.data
         iban = form.iban.data
         balance = form.balance.data
