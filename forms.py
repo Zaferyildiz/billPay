@@ -60,7 +60,7 @@ class Invoice(FlaskForm):
     invoiceDate = DateField(label="Invoice Date")
     deadline = DateField(label="Deadline for payment")
     charge = FloatField(label=("Charge"))
-    taxrate = FloatField(label=("Tax Rate"))
+    taxrate = FloatField(label=("Tax Rate"), validators=[DataRequired("Please enter a tax rate. Try again!"), NumberRange(0,100,"Tax rate should be between 0-100. Try again!")])
 
 class InvoiceEdit(FlaskForm):
     invoiceDate = DateField(label=("Invoice Date"))
@@ -70,7 +70,7 @@ class InvoiceEdit(FlaskForm):
 
 class BankAccount(FlaskForm):
     name = StringField("Bank Account Name", validators=[DataRequired(message="Please give a name to your bank account")])
-    iban = StringField("IBAN", validators=[DataRequired(message="Please enter your IBAN number"), Length(26, 26, "Your IBAN must contaion 26 characters")])
+    iban = StringField("IBAN", validators=[DataRequired(message="Please enter your IBAN number"), Length(26, 26, "Your IBAN must contains 26 characters")])
     balance = FloatField("Balance", validators=[DataRequired(message="Please enter balance of your bank account")])
 
 class DrawMoney(FlaskForm):

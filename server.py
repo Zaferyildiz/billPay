@@ -369,6 +369,9 @@ def bankAccount():
         iban = form.iban.data
         balance = form.balance.data
         bankAccountId = createBankAccount(name, iban, balance)
+        if isinstance(bankAccountId, str):
+            flash(bankAccountId, "danger")
+            return redirect(url_for("bankAccount"))
         if session['role'] == "company":
             assignBankAccounttoCompany(bankAccountId, session['id'])
         else:
@@ -376,7 +379,6 @@ def bankAccount():
         return redirect(url_for("bankAccount"))
     else:
         account = getBankAccount(session['id'], session['role'])
-        print(form.errors)
         if not account:
             return render_template("bankAccount.html", form=form, moneyform=moneyform, bankaccount=account)
         else:

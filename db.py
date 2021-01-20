@@ -60,13 +60,16 @@ def editInvoice(billId, invoiceDate, deadline, charge, taxrate):
         cursor.close()
         
 def createBankAccount(name, iban, balance):
-    with dbapi2.connect(url) as connection:
-        cursor = connection.cursor()
-        query = """INSERT INTO BANKACCOUNT (NAME, IBAN, BALANCE) VALUES(%s,%s,%s) RETURNING ID;"""
-        cursor.execute(query, (name, iban, balance))
-        bankAccountId = cursor.fetchone()[0]
-        cursor.close()
-        return bankAccountId
+    try:
+        with dbapi2.connect(url) as connection:
+            cursor = connection.cursor()
+            query = """INSERT INTO BANKACCOUNT (NAME, IBAN, BALANCE) VALUES(%s,%s,%s) RETURNING ID;"""
+            cursor.execute(query, (name, iban, balance))
+            bankAccountId = cursor.fetchone()[0]
+            cursor.close()
+            return bankAccountId
+    except dbapi2.IntegrityError as e:
+        return(e.diag.message_detail)
 
 def assignBankAccounttoConsumer(bankAccountId, consumerId):
     with dbapi2.connect(url) as connection:
@@ -496,19 +499,33 @@ def getNumberOfConsumerinCity(companyId):
 def getNumberofMyBills(consumerId):
     with dbapi2.connect(url) as connection:
         cursor = connection.cursor()
-        query = """SELECT COUNT(*) FROM BILL WHERE CONSUMERID = %s"""
-        cursor.execute(query, (consumerId, ))
-        num = cursor.fetchone()
+        query = """SELECT CONSUMERID, COUNT(CONSUMERID) FROM BILL GROUP BY CONSUMERID"""
+        cursor.execute(query)
+        data = cursor.fetchall()
         cursor.close()
-        return num[0]
+        print(data)
+        num = {}
+        for row in data:
+            num[row[0]] = row[1]
+        if not num:
+            return 0
+        return num[consumerId]
+        
 
 def getNumberofOutagesinCity(consumerId):
     consumer = getConsumer(consumerId)
     cityId = consumer['cityid']
     with dbapi2.connect(url) as connection:
         cursor = connection.cursor()
-        query = """SELECT COUNT(*) FROM OUTAGE WHERE CITYID = %s"""
-        cursor.execute(query, (cityId, ))
-        num = cursor.fetchone()
+        query = """SELECT CITYID, COUNT (CITYID) FROM OUTAGE GROUP BY CITYID;"""
+        cursor.execute(query)
+        data = cursor.fetchall()
         cursor.close()
-        return num[0]
+        num = {}
+        for row in data:
+            num[row[0]] = row[1]
+        if not num:
+            return 0
+        return num[cityId]
+
+        
