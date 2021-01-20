@@ -71,10 +71,10 @@ class InvoiceEdit(FlaskForm):
 class BankAccount(FlaskForm):
     name = StringField("Bank Account Name", validators=[DataRequired(message="Please give a name to your bank account")])
     iban = StringField("IBAN", validators=[DataRequired(message="Please enter your IBAN number"), Length(26, 26, "Your IBAN must contains 26 characters")])
-    balance = FloatField("Balance", validators=[DataRequired(message="Please enter balance of your bank account")])
+    balance = FloatField("Balance", validators=[DataRequired(message="Please enter balance of your bank account"), NumberRange(0,None,"Please enter a positive amount")])
 
 class DrawMoney(FlaskForm):
-    money = FloatField("Money", validators=[DataRequired(message="Please enter a number")])
+    money = FloatField("Money", validators=[DataRequired(message="Please enter a number"), NumberRange(0,None,"Please enter a positive amount")])
 
 class Outage(FlaskForm):
     startDate = DateField(label="Start Date")

@@ -208,6 +208,9 @@ def consumerDelete():
     if request.method == "POST":
         consumerId = session['id']
         logout()
+        bankaccount = getBankAccount(consumerId, "consumer")
+        if bankaccount:
+            deleteBankAccount(bankaccount['id'])
         deleteConsumer(consumerId)
         return redirect(url_for("index"))
 
@@ -216,6 +219,9 @@ def consumerDelete():
 def companyDelete():
     companyId = session['id']
     session.clear()
+    bankaccount = getBankAccount(companyId, "company")
+    if bankaccount:
+        deleteBankAccount(bankaccount['id'])
     deleteCompany(companyId)
     return redirect(url_for("index"))
 

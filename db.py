@@ -503,15 +503,16 @@ def getNumberofMyBills(consumerId):
         cursor.execute(query)
         data = cursor.fetchall()
         cursor.close()
-        print(data)
         num = {}
         for row in data:
             num[row[0]] = row[1]
-        if not num:
+        if not bool(num):
             return 0
-        return num[consumerId]
+        if consumerId in num.keys():
+            return num[consumerId]
+        else:
+            return 0
         
-
 def getNumberofOutagesinCity(consumerId):
     consumer = getConsumer(consumerId)
     cityId = consumer['cityid']
@@ -524,8 +525,9 @@ def getNumberofOutagesinCity(consumerId):
         num = {}
         for row in data:
             num[row[0]] = row[1]
-        if not num:
+        if not bool(num):
             return 0
-        return num[cityId]
-
-        
+        if cityId in num.keys():
+            return num[cityId]
+        else:
+            return 0
