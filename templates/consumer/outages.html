@@ -14,6 +14,9 @@
       </div>
       
   {% else %}
+  <input class="form-control mr-sm-2 col-2" style="float: right;" type="text" id="searchInput" placeholder="Search">
+  <br> 
+  <br>
       <table class="table table-striped">
         <thead>
           <tr>
@@ -24,7 +27,7 @@
             <th scope="col">End Date</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody id="dataTable">
           
               {% for index in range(outages |length) %}              
               <tr>       
@@ -41,5 +44,18 @@
       <br>
   {% endif %}
 
-    
 {% endblock content %}
+
+{% block script %}
+
+<script type="text/javascript">
+      $("#searchInput").on("keyup", function() {
+        var value = $(this).val().toLowerCase();
+        console.log(value);
+        $("#dataTable tr").filter(function() {
+          $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+        });
+      });
+</script>
+    
+{% endblock script %}
