@@ -327,6 +327,8 @@ def myBills(billId):
             return redirect(url_for("bankAccount"))
         if mybankaccount['balance'] >= bill['charge']:
             deleteBill(billId)
+            flash("Payment is successfull", "success")
+            updateBankAccountofConsumer(session['id'], bill['charge'])
         else:
             flash("Your balance is not enough for this operation", "danger")
         return redirect(url_for("myBills"))
@@ -344,6 +346,7 @@ def _jinja2_filter_datetime(date, fmt=None):
 @isConsumer
 def shareBill(billId):
     billShare(billId)
+    flash("Bill is shared with other people","success")
     return redirect(url_for("myBills"))
 
 @app.route("/createOutage", methods=["GET", "POST"])

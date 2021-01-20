@@ -270,7 +270,7 @@ def deleteBill(billId):
 def updateBankAccount(companyId, charge):
     bankaccount = getBankAccount(companyId, "company")
     newbalance = 0
-    if not bankaccount:
+    if bankaccount:
         newbalance = bankaccount['balance']
         newbalance += charge
         company = getCompany(companyId)
@@ -280,6 +280,21 @@ def updateBankAccount(companyId, charge):
                     SET BALANCE = %s
                     WHERE BANKACCOUNT.ID = %s;"""
             cursor.execute(query, (newbalance, company['bankaccountid'] ))
+            cursor.close()
+
+def updateBankAccountofConsumer(consumerId, charge):
+    bankaccount = getBankAccount(consumerId, "consumer")
+    newbalance = 0
+    if bankaccount:
+        newbalance = bankaccount['balance']
+        newbalance -= charge
+        consumer = getConsumer(consumerId)
+        with dbapi2.connect(url) as connection:
+            cursor = connection.cursor()
+            query = """UPDATE BANKACCOUNT
+                    SET BALANCE = %s
+                    WHERE BANKACCOUNT.ID = %s;"""
+            cursor.execute(query, (newbalance, consumer['bankaccountid'] ))
             cursor.close()
 
 def deleteBankAccountfromdb(bankAccountId):

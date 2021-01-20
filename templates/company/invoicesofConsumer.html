@@ -8,7 +8,9 @@
 {% from "includes/_formhelpers.html" import render_field %}
 
     {% if (invoices |length) == 0 %}
-        <h3>This consumer has no bill currently!</h3>
+        <div class="card bg-light text-dark">
+          <div class="card-body">This consumer has no bill currently!</div>
+        </div>
     {% else %}
 
     <input class="form-control mr-sm-2 col-2" style="float: right;" type="text" id="searchInput" placeholder="Search">
