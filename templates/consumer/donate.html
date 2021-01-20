@@ -29,7 +29,7 @@
         <td>{{donatedBills[index]['companyname']}}</td>
         <td>{{donatedBills[index]['servicetype']}}</td>
         <td>{{donatedBills[index]['charge']}}</td>
-        <td>{{donatedBills[index]['deadline']}}</td>
+        <td>{{donatedBills[index]['deadline']| strftime}}</td>
         <td>
           <form method="post" action="{{ url_for('myBills', billId=donatedBills[index]['id']) }}">
             <button type="submit" class="btn btn-primary" title="Pay!">Pay</button>
