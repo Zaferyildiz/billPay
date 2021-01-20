@@ -14,7 +14,7 @@
           <div class="card">
             <div class="card-body">
               <h5 class="card-title">Bills</h5>
-              <p class="card-text">You have 5 bills</p>
+              <p class="card-text">You have {{nofbillsofconsumers}} bills</p>
               <a href="/myBills" class="btn btn-primary d-flex justify-content-center">View your bills</a>
             </div>
           </div>
@@ -23,7 +23,7 @@
           <div class="card">
             <div class="card-body">
               <h5 class="card-title">Outages</h5>
-              <p class="card-text">There is no power outages</p>
+              <p class="card-text">There are {{nofoutageofconsumer}} power outages</p>
               <a href="/outages" class="btn btn-primary d-flex justify-content-center">Display outage notifications</a>
             </div>
           </div>
@@ -37,11 +37,21 @@
         <div class="card-header">
           <b>Your Balance</b>
         </div>
-        <div class="card-body">
-          <h2 class="card-title">2835 TL</h2>
-          <br>
-          <a href="/bankAccount" class="btn btn-primary">Display your bank account</a>
-        </div>
+        {% if not bankaccount %}
+            <div class="card-body">
+              <h2 class="card-title">You have no bank account!</h2>
+              <br>
+              <a href="/bankAccount" class="btn btn-primary">Add a new bank account</a>
+            </div>
+            
+        {% else %}
+            <div class="card-body">
+              <h2 class="card-title">{{bankaccount['balance']}}</h2>
+              <br>
+              <a href="/bankAccount" class="btn btn-primary">Display your bank account</a>
+            </div>
+        {% endif %}
+        
       </div>
 {% elif session['role'] == "company" %}
 
@@ -54,7 +64,7 @@
         <div class="card">
           <div class="card-body">
             <h5 class="card-title">Consumers</h5>
-            <p class="card-text">Your company has 5 consumers</p>
+            <p class="card-text">Your company has {{nofconsumersofcompany}} consumers</p>
             <a href="/consumers" class="btn btn-primary d-flex justify-content-center">View your consumers</a>
           </div>
         </div>
@@ -63,7 +73,7 @@
         <div class="card">
           <div class="card-body">
             <h5 class="card-title">Outages</h5>
-            <p class="card-text">There is no power outages</p>
+            <p class="card-text">There are {{nofoutageofcompany}} power outages</p>
             <a href="/createOutage" class="btn btn-primary d-flex justify-content-center">Create an outage notification</a>
           </div>
         </div>
@@ -77,11 +87,20 @@
       <div class="card-header">
         <b>Your Balance</b>
       </div>
-      <div class="card-body">
-        <h2 class="card-title">2835 TL</h2>
-        <br>
-        <a href="/bankAccount" class="btn btn-primary">Display your bank account</a>
-      </div>
+      {% if not bankaccount %}
+            <div class="card-body">
+              <h2 class="card-title">You have no bank account!</h2>
+              <br>
+              <a href="/bankAccount" class="btn btn-primary">Add a new bank account</a>
+            </div>
+            
+        {% else %}
+            <div class="card-body">
+              <h2 class="card-title">{{bankaccount['balance']}}</h2>
+              <br>
+              <a href="/bankAccount" class="btn btn-primary">Display your bank account</a>
+            </div>
+        {% endif %}
     </div>
 {% else %}
       <div class="container">

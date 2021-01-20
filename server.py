@@ -28,7 +28,21 @@ def index():
     nofbillsofconsumers = None
     nofconsumersofcompany = None
 
-    return render_template("index.html", numberofConsumer=nofconsumer, numberofCompany=nofcompany, numberofCity=nofcity)
+    if 'role' in session and session['role'] == 'company':
+        nofoutageofcompany = getNumberofOutageofCompany(session['id'])
+        nofconsumersofcompany = getNumberOfConsumerinCity(session['id'])
+        bankaccount = getBankAccount(session['id'], "company")
+        return render_template("index.html", numberofConsumer=nofconsumer, numberofCompany=nofcompany, numberofCity=nofcity,
+        nofoutageofcompany=nofoutageofcompany, nofoutageofconsumer=nofoutageofconsumer, bankaccount=bankaccount, nofbillsofconsumers=nofbillsofconsumers, nofconsumersofcompany=nofconsumersofcompany)
+    elif 'role' in session and session['role'] == 'consumer':
+        nofbillsofconsumers = getNumberofMyBills(session['id'])
+        nofoutageofconsumer = getNumberofOutagesinCity(session['id'])
+        bankaccount = getBankAccount(session['id'], "consumer")
+        return render_template("index.html", numberofConsumer=nofconsumer, numberofCompany=nofcompany, numberofCity=nofcity,
+        nofoutageofcompany=nofoutageofcompany, nofoutageofconsumer=nofoutageofconsumer, bankaccount=bankaccount, nofbillsofconsumers=nofbillsofconsumers, nofconsumersofcompany=nofconsumersofcompany)
+    else:
+        return render_template("index.html", numberofConsumer=nofconsumer, numberofCompany=nofcompany, numberofCity=nofcity,
+        nofoutageofcompany=nofoutageofcompany, nofoutageofconsumer=nofoutageofconsumer, bankaccount=bankaccount, nofbillsofconsumers=nofbillsofconsumers, nofconsumersofcompany=nofconsumersofcompany)
 
 @app.route("/login", methods = ["GET", "POST"])
 def login(): 
@@ -208,8 +222,9 @@ def companyDelete():
 @app.route("/consumers")
 @isCompany
 def viewConsumers():
-    consumers = getAllConsumer()
-    return render_template("company/viewConsumers.html", consumers=consumers)
+    consumers = getAllConsumerinaCity(session['id'])
+    city = getCity(session['id'])
+    return render_template("company/viewConsumers.html", consumers=consumers, city=city)
 
 @app.route("/createInvoice/<int:consumerId>", methods=["GET", "POST"])
 @isCompany

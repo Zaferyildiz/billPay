@@ -334,6 +334,35 @@ def getAllConsumer():
             data.append(dict(zip(columns, row)))
         return data
 
+def getCity(companyId):
+    company = getCompany(companyId)
+    cityId = company['cityid']
+    with dbapi2.connect(url) as connection:
+        cursor = connection.cursor()
+        query = "SELECT * FROM CITY WHERE ID = %s"
+        cursor.execute(query, (cityId,))
+        city = cursor.fetchone()
+        columns = list(cursor.description[i][0] for i in range(0, len(cursor.description)))
+        cursor.close()
+        data = dict(zip(columns, city))
+        return data
+        
+
+def getAllConsumerinaCity(companyId):
+    company = getCompany(companyId)
+    cityId = company['cityid']
+    with dbapi2.connect(url) as connection:
+        cursor = connection.cursor()
+        query = "SELECT * FROM CONSUMER WHERE CITYID = %s"
+        cursor.execute(query, (cityId,))
+        consumers = cursor.fetchall()
+        columns = [column[0] for column in cursor.description]
+        cursor.close()
+        data = []
+        for row in consumers:
+            data.append(dict(zip(columns, row)))
+        return data
+
 def getConsumer(consumerId):
     with dbapi2.connect(url) as connection:
         cursor = connection.cursor()
@@ -444,10 +473,42 @@ def getNumberofCity():
         cursor.close()
         return num[0]
 
-def getNumberOfMyBills():
+def getNumberofOutageofCompany(companyId):
     with dbapi2.connect(url) as connection:
         cursor = connection.cursor()
-        cursor.execute("""SELECT COUNT(*) FROM CITY""")
+        query = """SELECT COUNT(*) FROM OUTAGE WHERE COMPANYID = %s"""
+        cursor.execute(query, (companyId, ))
+        num = cursor.fetchone()
+        cursor.close()
+        return num[0]
+
+def getNumberOfConsumerinCity(companyId):
+    company = getCompany(companyId)
+    cityId = company['cityid']
+    with dbapi2.connect(url) as connection:
+        cursor = connection.cursor()
+        query = """SELECT COUNT(*) FROM CONSUMER WHERE CITYID = %s"""
+        cursor.execute(query, (cityId, ))
+        num = cursor.fetchone()
+        cursor.close()
+        return num[0]
+
+def getNumberofMyBills(consumerId):
+    with dbapi2.connect(url) as connection:
+        cursor = connection.cursor()
+        query = """SELECT COUNT(*) FROM BILL WHERE CONSUMERID = %s"""
+        cursor.execute(query, (consumerId, ))
+        num = cursor.fetchone()
+        cursor.close()
+        return num[0]
+
+def getNumberofOutagesinCity(consumerId):
+    consumer = getConsumer(consumerId)
+    cityId = consumer['cityid']
+    with dbapi2.connect(url) as connection:
+        cursor = connection.cursor()
+        query = """SELECT COUNT(*) FROM OUTAGE WHERE CITYID = %s"""
+        cursor.execute(query, (cityId, ))
         num = cursor.fetchone()
         cursor.close()
         return num[0]
