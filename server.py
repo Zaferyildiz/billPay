@@ -376,6 +376,7 @@ def bankAccount():
         return redirect(url_for("bankAccount"))
     else:
         account = getBankAccount(session['id'], session['role'])
+        print(form.errors)
         if not account:
             return render_template("bankAccount.html", form=form, moneyform=moneyform, bankaccount=account)
         else:
